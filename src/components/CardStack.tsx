@@ -13,7 +13,7 @@ interface CardStackProps {
   onOpenMenu?: () => void;
   onExit?: () => void;
   editionText?: string;
-  triggerHaptic: (pattern?: 'light' | 'snap') => void;
+  triggerHaptic: (pattern?: 'light' | 'medium' | 'snap' | 'success' | 'shuffle') => void;
 }
 
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
@@ -122,8 +122,8 @@ export function CardStack({
     return (
       <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4">
         <motion.div
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          initial={{ scale: 0.95, opacity: 0, y: 30 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
           transition={{ type: 'spring', damping: 20, stiffness: 250 }}
           onClick={() => {
             triggerHaptic('snap');
@@ -184,11 +184,14 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4 select-none touch-none">
-      {/* Layer 3: Bottom card consistently peeking to the LEFT */}
+      {/* Layer 3: Bottom card deals in from bottom-left */}
       {thirdCard && (
-        <div
+        <motion.div
+          initial={{ x: -90, y: 120, rotate: -16, opacity: 0 }}
+          animate={{ x: 0, y: 12, rotate: stackLeftRotate, opacity: 0.5 }}
+          transition={{ type: 'spring', damping: 22, stiffness: 260, delay: 0.02 }}
           aria-hidden="true"
-          className="absolute inset-x-5 top-2 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50"
+          className="absolute inset-x-5 top-2 aspect-[1.38/1] rounded-[32px] border pointer-events-none"
           style={{
             ...getCardStyle(thirdCard.isCover),
             transform: `translateY(12px) scale(0.93) rotate(${stackLeftRotate}deg)`,
@@ -197,10 +200,17 @@ export function CardStack({
         />
       )}
 
-      {/* Layer 2: Middle card consistently peeking to the RIGHT */}
+      {/* Layer 2: Middle card deals in from bottom-right */}
       {nextCard && (
         <motion.div
           key={`next-${nextCard.id}`}
+          initial={{ x: 100, y: 110, rotate: 14, opacity: 0 }}
+          animate={{
+            x: 0,
+            y: 0,
+            opacity: 1,
+          }}
+          transition={{ type: 'spring', damping: 22, stiffness: 260, delay: 0.05 }}
           aria-hidden="true"
           style={{
             ...getCardStyle(nextCard.isCover),
@@ -256,7 +266,7 @@ export function CardStack({
               </h2>
               {nextCard.coverTagline && (
                 <p
-                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-tight text-white/85 max-w-xs leading-snug"
+                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
                   style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
                 >
                   {nextCard.coverTagline}
@@ -292,10 +302,13 @@ export function CardStack({
         </motion.div>
       )}
 
-      {/* Layer 1: Active Top Draggable Card */}
+      {/* Layer 1: Active Top Draggable Card deals in from bottom center */}
       {currentCard && (
         <motion.div
           key={`current-${currentCard.id}`}
+          initial={{ y: 140, rotate: -3, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: 'spring', damping: 20, stiffness: 280, delay: 0.08 }}
           drag={isAnimatingOut ? false : 'x'}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.85}
@@ -352,7 +365,7 @@ export function CardStack({
               </h2>
               {currentCard.coverTagline && (
                 <p
-                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-tight text-white/85 max-w-xs leading-snug"
+                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
                   style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
                 >
                   {currentCard.coverTagline}

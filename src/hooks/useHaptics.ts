@@ -9,7 +9,9 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
   const getAudioContext = useCallback(() => {
     if (typeof window === 'undefined') return null;
     if (!audioCtxRef.current) {
-      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (AudioCtx) {
         audioCtxRef.current = new AudioCtx();
       }
@@ -21,7 +23,7 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
   }, []);
 
   const triggerHaptic = useCallback(
-    (pattern: 'light' | 'medium' | 'snap' | 'success' = 'snap') => {
+    (pattern: 'light' | 'medium' | 'snap' | 'success' | 'shuffle' = 'snap') => {
       if (hapticsEnabled && typeof window !== 'undefined' && 'vibrate' in navigator) {
         try {
           if (pattern === 'light') {
@@ -32,6 +34,8 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
             navigator.vibrate([12, 8, 15]);
           } else if (pattern === 'success') {
             navigator.vibrate([20, 30, 40]);
+          } else if (pattern === 'shuffle') {
+            navigator.vibrate([10, 20, 10, 20, 10, 20, 15]);
           }
         } catch {
           // Vibration may be restricted by browser policy
@@ -44,11 +48,36 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
           if (!ctx) return;
 
           const now = ctx.currentTime;
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
 
-          if (pattern === 'snap') {
+          if (pattern === 'shuffle') {
+            // Multi-click card riffle / shuffle flutter sound
+            const clickCount = 10;
+            const interval = 0.026; // ~26ms per card friction snap
+            for (let i = 0; i < clickCount; i++) {
+              const clickTime = now + i * interval;
+              const oscClick = ctx.createOscillator();
+              const gainClick = ctx.createGain();
+
+              oscClick.type = i % 2 === 0 ? 'triangle' : 'sine';
+              const freq = 120 + Math.random() * 80 + i * 8;
+              oscClick.frequency.setValueAtTime(freq, clickTime);
+              oscClick.frequency.exponentialRampToValueAtTime(35, clickTime + 0.022);
+
+              const vol = 0.03 + (i / clickCount) * 0.05;
+              gainClick.gain.setValueAtTime(vol, clickTime);
+              gainClick.gain.exponentialRampToValueAtTime(0.001, clickTime + 0.022);
+
+              oscClick.connect(gainClick);
+              gainClick.connect(ctx.destination);
+
+              oscClick.start(clickTime);
+              oscClick.stop(clickTime + 0.025);
+            }
+          } else if (pattern === 'snap') {
             // Analog index card flip / mechanical flick sound
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
             osc.type = 'triangle';
             osc.frequency.setValueAtTime(140, now);
             osc.frequency.exponentialRampToValueAtTime(45, now + 0.045);
@@ -63,6 +92,9 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
             osc.stop(now + 0.05);
           } else if (pattern === 'light') {
             // Soft paper touch
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
             osc.type = 'sine';
             osc.frequency.setValueAtTime(220, now);
             osc.frequency.exponentialRampToValueAtTime(80, now + 0.03);
@@ -77,6 +109,9 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
             osc.stop(now + 0.035);
           } else if (pattern === 'success') {
             // Warm double tone
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
             osc.type = 'sine';
             osc.frequency.setValueAtTime(280, now);
             osc.frequency.exponentialRampToValueAtTime(440, now + 0.12);
