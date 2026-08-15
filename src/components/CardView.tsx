@@ -9,14 +9,23 @@ import { BottomSheet } from './motion/bottom-sheet';
 import { DECKS } from '@/data/decks';
 import { RotateCcw } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
+import { ProgressCircle } from './ui/ProgressCircle';
 
 interface CardViewProps {
   deck: Deck;
   onSelectDeck: (deck: Deck) => void;
   onExit: () => void;
+  progressMap?: Record<string, number>;
+  onUpdateProgress?: (deckId: string, currentIndex: number, totalCards: number) => void;
 }
 
-export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
+export function CardView({
+  deck,
+  onSelectDeck,
+  onExit,
+  progressMap = {},
+  onUpdateProgress,
+}: CardViewProps) {
   const [cards, setCards] = useState<Card[]>(() => [...deck.cards]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -26,6 +35,13 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
     setCards([...deck.cards]);
     setCurrentIndex(0);
   }, [deck]);
+
+  // Sync progress
+  useEffect(() => {
+    if (onUpdateProgress) {
+      onUpdateProgress(deck.id, currentIndex, cards.length);
+    }
+  }, [deck.id, currentIndex, cards.length, onUpdateProgress]);
 
   useWakeLock(true);
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
@@ -129,10 +145,11 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
         snapPoints={[0.62, 0.92]}
         title="TOPICS"
       >
-        <div className="flex flex-col gap-3 mt-2">
-          {/* Deck List inside Bottom Sheet styled as tactile cards */}
+        <div className="flex flex-col gap-2.5 mt-2">
+          {/* Deck List inside Bottom Sheet with left-aligned text & right-aligned progress circle */}
           {DECKS.map((d) => {
             const isActive = d.id === deck.id;
+            const progress = progressMap[d.id] || 0;
             return (
               <button
                 key={d.id}
@@ -141,7 +158,7 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
                   onSelectDeck(d);
                   setIsSheetOpen(false);
                 }}
-                className={`relative w-full rounded-2xl p-4 text-center border transition-all cursor-pointer overflow-hidden ${
+                className={`relative w-full rounded-2xl px-5 py-4 flex items-center justify-between text-left border transition-all cursor-pointer overflow-hidden ${
                   isActive
                     ? 'bg-[#C10016] text-white border-[#A00012] shadow-sm'
                     : 'bg-[#FAF8F5] text-[#C10016] border-black/10 hover:bg-neutral-50 active:scale-[0.98]'
@@ -152,18 +169,31 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
                     : 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 6px rgba(0,0,0,0.04)',
                 }}
               >
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight">
-                  {d.title}
-                </h3>
-                {d.description && (
-                  <p
-                    className={`mt-1 text-[11px] font-medium uppercase tracking-tight ${
-                      isActive ? 'text-white/80' : 'text-[#C10016]/70'
-                    }`}
-                  >
-                    {d.description}
-                  </p>
-                )}
+                {/* Left Text */}
+                <div className="flex flex-col pr-3">
+                  <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight">
+                    {d.title}
+                  </h3>
+                  {d.description && (
+                    <p
+                      className={`mt-0.5 text-[11px] font-medium uppercase tracking-tight leading-tight ${
+                        isActive ? 'text-white/80' : 'text-[#C10016]/70'
+                      }`}
+                    >
+                      {d.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Right Progress Circle */}
+                <div className="flex items-center justify-center pl-2">
+                  <ProgressCircle
+                    progress={progress}
+                    size={18}
+                    strokeWidth={2}
+                    isActive={isActive}
+                  />
+                </div>
               </button>
             );
           })}
