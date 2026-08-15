@@ -44,7 +44,7 @@ export function CardStack({
 
   // Motion values for the top active card
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 0, 300], [-14, 0, 14]);
+  const rotate = useTransform(x, [-300, 0, 300], [-10, 0, 14]);
 
   // Dynamic transforms for Layer 2 (middle card) as top card is dragged right
   const nextScale = useTransform(x, [0, 250], [0.96, 1], { clamp: true });
@@ -52,10 +52,9 @@ export function CardStack({
   const nextOpacity = useTransform(x, [0, 250], [0.9, 1], { clamp: true });
   const nextRotate = useTransform(x, [0, 250], [stackRightRotate, 0], { clamp: true });
 
-  // Dynamic transforms for Previous Card pulling IN from the right when dragged left (x < 0)
-  const prevX = useTransform(x, [-260, 0], [0, 480], { clamp: true });
-  const prevRotate = useTransform(x, [-260, 0], [0, 12], { clamp: true });
-  const prevOpacity = useTransform(x, [-260, -40, 0], [1, 0.95, 0], { clamp: true });
+  // Dynamic transforms for Previous Card pulling IN from the right when dragged left (x < 0) - full opacity
+  const prevX = useTransform(x, [-260, 0], [0, 520], { clamp: true });
+  const prevRotate = useTransform(x, [-260, 0], [0, 10], { clamp: true });
 
   const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isAnimatingOut) return;
@@ -64,7 +63,7 @@ export function CardStack({
     const velocityThreshold = 220;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      // Forward / Swipe Right -> Animate off-screen to the right then advance
+      // Forward / Swipe Right -> Current card flies off-screen to the right then advance
       setIsAnimatingOut(true);
       triggerHaptic('snap');
       await animate(x, 600, {
@@ -75,7 +74,7 @@ export function CardStack({
       setIsAnimatingOut(false);
       onNext();
     } else if ((info.offset.x < -threshold || info.velocity.x < -velocityThreshold) && currentIndex > 0) {
-      // Reverse / Swipe Left -> Smoothly pull previous card all the way in from the right
+      // Reverse / Swipe Left -> Current card smoothly slides off to the left, while previous card glides in from right
       setIsAnimatingOut(true);
       triggerHaptic('light');
       await animate(x, -260, {
@@ -293,7 +292,7 @@ export function CardStack({
         </motion.div>
       )}
 
-      {/* Layer 1: Active Draggable Card */}
+      {/* Layer 1: Active Draggable Card (Moves smoothly to the LEFT when dragged left) */}
       {currentCard && (
         <motion.div
           key={`current-${currentCard.id}`}
@@ -389,7 +388,7 @@ export function CardStack({
         </motion.div>
       )}
 
-      {/* Layer 0 / Overlay: Previous Card (interactively pulled IN from right as you drag left) */}
+      {/* Layer 0 / Overlay: Previous Card (glides in from the right, full 100% solid opacity) */}
       {prevCard && (
         <motion.div
           key={`prev-${prevCard.id}`}
@@ -398,7 +397,6 @@ export function CardStack({
             ...getCardStyle(prevCard.isCover),
             x: prevX,
             rotate: prevRotate,
-            opacity: prevOpacity,
             zIndex: 20,
           }}
           className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border pointer-events-none will-change-transform overflow-hidden"
