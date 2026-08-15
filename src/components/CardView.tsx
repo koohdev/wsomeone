@@ -72,6 +72,7 @@ export function CardView({
     return 0;
   });
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isShuffling, setIsShuffling] = useState(false);
 
   const prevDeckIdRef = useRef(deck.id);
 
@@ -101,36 +102,51 @@ export function CardView({
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
 
   const handleReshuffle = useCallback(() => {
-    const coverCard = deck.cards[0];
-    const questionCards = deck.cards.slice(1);
-    const shuffledQuestions = [...questionCards].sort(() => Math.random() - 0.5);
-    const newCards = [coverCard, ...shuffledQuestions];
-    setCards(newCards);
-    setCurrentIndex(0);
-    // Play the book page shuffle sound effect
+    setIsShuffling(true);
     triggerHaptic('shuffle');
+
+    setTimeout(() => {
+      const coverCard = deck.cards[0];
+      const questionCards = deck.cards.slice(1);
+      const shuffledQuestions = [...questionCards].sort(() => Math.random() - 0.5);
+      const newCards = [coverCard, ...shuffledQuestions];
+      setCards(newCards);
+      setCurrentIndex(0);
+    }, 200);
+
+    setTimeout(() => {
+      setIsShuffling(false);
+    }, 650);
   }, [deck.cards, triggerHaptic]);
 
   const handleRestartDeck = useCallback(() => {
-    setCurrentIndex(0);
+    setIsShuffling(true);
     triggerHaptic('shuffle');
-    if (onResetProgress) {
-      onResetProgress(deck.id);
-    }
+
+    setTimeout(() => {
+      setCurrentIndex(0);
+      if (onResetProgress) {
+        onResetProgress(deck.id);
+      }
+    }, 200);
+
+    setTimeout(() => {
+      setIsShuffling(false);
+    }, 650);
   }, [deck.id, onResetProgress, triggerHaptic]);
 
   const handleNext = useCallback(() => {
-    if (currentIndex < cards.length) {
+    if (currentIndex < cards.length && !isShuffling) {
       setCurrentIndex((prev) => prev + 1);
     }
-  }, [currentIndex, cards.length]);
+  }, [currentIndex, cards.length, isShuffling]);
 
   const handlePrev = useCallback(() => {
-    if (currentIndex > 0) {
+    if (currentIndex > 0 && !isShuffling) {
       setCurrentIndex((prev) => prev - 1);
       triggerHaptic('light');
     }
-  }, [currentIndex, triggerHaptic]);
+  }, [currentIndex, isShuffling, triggerHaptic]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -183,6 +199,7 @@ export function CardView({
           onReshuffle={handleReshuffle}
           onOpenMenu={() => setIsSheetOpen(true)}
           onExit={onExit}
+          isShuffling={isShuffling}
           editionText={deck.editionText}
           triggerHaptic={triggerHaptic}
         />
