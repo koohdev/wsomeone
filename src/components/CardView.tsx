@@ -178,8 +178,8 @@ export function CardView({
   return (
     <div className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
       {/* Top Bar: Centered Counter with NumberFlow Animation */}
-      <header className="relative z-30 flex items-center justify-center px-6 pt-5 sm:pt-7 landscape:pt-2 landscape:pb-1 w-full max-w-xl mx-auto">
-        <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base landscape:text-xs font-semibold tracking-wider">
+      <header className="relative z-30 flex items-center justify-center px-6 pt-5 sm:pt-7 w-full max-w-xl mx-auto">
+        <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
           <NumberFlow
             value={displayIndex}
             transformTiming={{ duration: 350, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
@@ -191,7 +191,7 @@ export function CardView({
       </header>
 
       {/* Center Card Stage */}
-      <main className="relative flex flex-1 items-center justify-center py-4 sm:py-6 landscape:py-1">
+      <main className="relative flex flex-1 items-center justify-center py-4 sm:py-6">
         <CardStack
           cards={cards}
           currentIndex={currentIndex}
@@ -206,11 +206,11 @@ export function CardView({
         />
       </main>
 
-      {/* 1. Portrait Floating Menu Pill (hidden in landscape) */}
-      <footer className="relative z-30 flex landscape:hidden flex-col items-center justify-center pb-8 pt-2">
+      {/* 1. Standard Bottom Menu Pill (Desktop, Tablets & Mobile Portrait; Hidden ONLY on Phone Landscape) */}
+      <footer className="relative z-30 flex hide-on-phone-landscape flex-col items-center justify-center pb-8 pt-2">
         <button
           onClick={() => {
-            triggerHaptic('light');
+            triggerHaptic('select');
             setIsSheetOpen(true);
           }}
           className="flex items-center justify-center gap-1.5 px-6 py-2 rounded-full border border-[#C10016] text-[#C10016] font-mono text-xs font-semibold uppercase tracking-wider bg-transparent hover:bg-[#C10016]/5 active:scale-95 transition-all cursor-pointer shadow-xs"
@@ -220,13 +220,13 @@ export function CardView({
         </button>
       </footer>
 
-      {/* 2. Landscape Menu Button on Right Side (vertically stacked letters + M E N U) */}
+      {/* 2. Phone Landscape Right-Side Menu Button (ONLY visible on phones held in landscape) */}
       <button
         onClick={() => {
-          triggerHaptic('light');
+          triggerHaptic('select');
           setIsSheetOpen(true);
         }}
-        className="hidden landscape:flex fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center justify-center gap-0.5 py-3 px-2 rounded-full border border-[#C10016] text-[#C10016] font-mono text-[11px] font-bold uppercase tracking-widest bg-[#EDEDEF]/85 backdrop-blur-xs hover:bg-[#C10016]/5 active:scale-95 transition-all cursor-pointer shadow-xs"
+        className="phone-landscape-only hidden fixed right-4 top-1/2 -translate-y-1/2 z-40 flex-col items-center justify-center gap-0.5 py-3 px-2 rounded-full border border-[#C10016] text-[#C10016] font-mono text-[11px] font-bold uppercase tracking-widest bg-[#EDEDEF]/85 backdrop-blur-xs hover:bg-[#C10016]/5 active:scale-95 transition-all cursor-pointer shadow-xs"
       >
         <span className="text-xs leading-none mb-0.5">+</span>
         <span>M</span>
@@ -251,7 +251,7 @@ export function CardView({
               <button
                 key={d.id}
                 onClick={() => {
-                  triggerHaptic('snap');
+                  triggerHaptic('select');
                   onSelectDeck(d);
                   setIsSheetOpen(false);
                 }}
@@ -326,7 +326,7 @@ export function CardView({
             {/* GO BACK Button */}
             <button
               onClick={() => {
-                triggerHaptic('light');
+                triggerHaptic('select');
                 setIsSheetOpen(false);
                 onExit();
               }}

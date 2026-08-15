@@ -43,7 +43,7 @@ export function TopicMenu({ decks, onSelectDeck, progressMap = {} }: TopicMenuPr
               <button
                 key={deck.id}
                 onClick={() => {
-                  triggerHaptic('snap');
+                  triggerHaptic('select');
                   onSelectDeck(deck);
                 }}
                 className="relative w-full aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 flex flex-col justify-between text-left border active:scale-[0.98] transition-transform overflow-hidden group cursor-pointer shadow-md"
