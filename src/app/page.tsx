@@ -14,7 +14,11 @@ export default function Home() {
   return (
     <main className="min-h-screen w-full bg-[#EDEDEF]">
       {activeDeck ? (
-        <CardView deck={activeDeck} onExit={() => setSelectedDeckId(null)} />
+        <CardView
+          deck={activeDeck}
+          onSelectDeck={(deck: Deck) => setSelectedDeckId(deck.id)}
+          onExit={() => setSelectedDeckId(null)}
+        />
       ) : (
         <TopicMenu
           decks={DECKS}
