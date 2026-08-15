@@ -25,7 +25,7 @@ export function useWakeLock(isActive: boolean = true) {
             setIsLocked(false);
           });
         }
-      } catch (err) {
+      } catch {
         // WakeLock request failed (battery saver, permissions, or background tab)
         setIsLocked(false);
       }

@@ -8,7 +8,7 @@ import {
   useDragControls,
   useReducedMotion,
 } from "motion/react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { EASE_DRAWER } from "@/lib/ease";
 import { cn } from "@/lib/utils";
@@ -43,20 +43,25 @@ export function BottomSheet({
   className,
   dismissThreshold = 120,
 }: BottomSheetProps) {
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
   const [snap, setSnap] = useState(defaultSnap);
-  const [mounted, setMounted] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
+
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setSnap(defaultSnap);
+    }
+  }
+
   const dragControls = useDragControls();
   const sheetRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const heightRef = useRef(0);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (open) setSnap(defaultSnap);
-  }, [open, defaultSnap]);
 
   // Lock background scroll while open.
   useEffect(() => {

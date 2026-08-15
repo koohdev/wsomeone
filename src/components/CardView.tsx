@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Deck } from '@/types';
+import { DeckProgressState } from '@/lib/storage';
 import { CardStack } from './CardStack';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useHaptics } from '@/hooks/useHaptics';
 import { BottomSheet } from './motion/bottom-sheet';
 import { DECKS } from '@/data/decks';
-import { RotateCcw, ArrowLeft } from 'lucide-react';
+import { RotateCcw, ArrowLeft, RotateCw } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
 import { ProgressCircle } from './ui/ProgressCircle';
 
@@ -16,7 +17,40 @@ interface CardViewProps {
   onSelectDeck: (deck: Deck) => void;
   onExit: () => void;
   progressMap?: Record<string, number>;
-  onUpdateProgress?: (deckId: string, currentIndex: number, totalCards: number) => void;
+  savedState?: DeckProgressState;
+  onUpdateProgress?: (
+    deckId: string,
+    currentIndex: number,
+    totalCards: number,
+    cardIds?: string[]
+  ) => void;
+  onResetProgress?: (deckId: string) => void;
+}
+
+/**
+ * Re-order cards based on saved ID order
+ */
+function restoreCardOrder(defaultCards: Card[], savedCardIds?: string[]): Card[] {
+  if (!savedCardIds || savedCardIds.length === 0) return [...defaultCards];
+
+  const cardMap = new Map(defaultCards.map((c) => [c.id, c]));
+  const orderedCards: Card[] = [];
+
+  // Add saved cards in order
+  for (const id of savedCardIds) {
+    const found = cardMap.get(id);
+    if (found) {
+      orderedCards.push(found);
+      cardMap.delete(id);
+    }
+  }
+
+  // Append any cards that weren't in saved list
+  for (const remaining of cardMap.values()) {
+    orderedCards.push(remaining);
+  }
+
+  return orderedCards;
 }
 
 export function CardView({
@@ -24,24 +58,44 @@ export function CardView({
   onSelectDeck,
   onExit,
   progressMap = {},
+  savedState,
   onUpdateProgress,
+  onResetProgress,
 }: CardViewProps) {
-  const [cards, setCards] = useState<Card[]>(() => [...deck.cards]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [cards, setCards] = useState<Card[]>(() =>
+    restoreCardOrder(deck.cards, savedState?.cardIds)
+  );
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    if (savedState && typeof savedState.currentIndex === 'number') {
+      return Math.min(savedState.currentIndex, deck.cards.length);
+    }
+    return 0;
+  });
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
-  // Sync cards when deck changes
-  useEffect(() => {
-    setCards([...deck.cards]);
-    setCurrentIndex(0);
-  }, [deck]);
+  const prevDeckIdRef = useRef(deck.id);
 
-  // Sync progress
+  // Sync cards and resume position when deck changes or on initial mount
+  useEffect(() => {
+    if (prevDeckIdRef.current !== deck.id) {
+      prevDeckIdRef.current = deck.id;
+      const initialCards = restoreCardOrder(deck.cards, savedState?.cardIds);
+      setCards(initialCards);
+      const initialIndex =
+        savedState && typeof savedState.currentIndex === 'number'
+          ? Math.min(savedState.currentIndex, initialCards.length)
+          : 0;
+      setCurrentIndex(initialIndex);
+    }
+  }, [deck, savedState]);
+
+  // Sync progress to persistent storage whenever index or cards change
   useEffect(() => {
     if (onUpdateProgress) {
-      onUpdateProgress(deck.id, currentIndex, cards.length);
+      const cardIds = cards.map((c) => c.id);
+      onUpdateProgress(deck.id, currentIndex, cards.length, cardIds);
     }
-  }, [deck.id, currentIndex, cards.length, onUpdateProgress]);
+  }, [deck.id, currentIndex, cards, onUpdateProgress]);
 
   useWakeLock(true);
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
@@ -50,10 +104,19 @@ export function CardView({
     const coverCard = deck.cards[0];
     const questionCards = deck.cards.slice(1);
     const shuffledQuestions = [...questionCards].sort(() => Math.random() - 0.5);
-    setCards([coverCard, ...shuffledQuestions]);
+    const newCards = [coverCard, ...shuffledQuestions];
+    setCards(newCards);
     setCurrentIndex(0);
     triggerHaptic('snap');
   }, [deck.cards, triggerHaptic]);
+
+  const handleRestartDeck = useCallback(() => {
+    setCurrentIndex(0);
+    triggerHaptic('light');
+    if (onResetProgress) {
+      onResetProgress(deck.id);
+    }
+  }, [deck.id, onResetProgress, triggerHaptic]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < cards.length) {
@@ -200,6 +263,20 @@ export function CardView({
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-black/5">
+            {/* Start from beginning button if user is already midway through deck */}
+            {currentIndex > 0 && (
+              <button
+                onClick={() => {
+                  handleRestartDeck();
+                  setIsSheetOpen(false);
+                }}
+                className="flex items-center justify-center gap-2 w-full p-3.5 rounded-2xl border border-[#C10016]/25 text-[#C10016] font-mono text-xs font-semibold uppercase hover:bg-[#C10016]/5 active:scale-[0.98] cursor-pointer transition-all"
+              >
+                <RotateCw className="w-3.5 h-3.5" />
+                Start Deck From Beginning
+              </button>
+            )}
+
             {/* Reshuffle Button */}
             <button
               onClick={() => {
@@ -212,7 +289,7 @@ export function CardView({
               Reshuffle Current Deck
             </button>
 
-            {/* Back to Landing Page Button */}
+            {/* GO BACK Button */}
             <button
               onClick={() => {
                 triggerHaptic('light');
@@ -222,7 +299,7 @@ export function CardView({
               className="flex items-center justify-center gap-2 w-full p-3.5 rounded-2xl bg-[#C10016]/10 text-[#C10016] font-mono text-xs font-semibold uppercase hover:bg-[#C10016]/15 active:scale-[0.98] cursor-pointer transition-all"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Landing Page
+              GO BACK
             </button>
           </div>
         </div>
