@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, useMotionValue, useTransform, animate, PanInfo } from 'framer-motion';
 import { Card } from '@/types';
 
@@ -33,6 +33,7 @@ export function CardStack({
   const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   const isEnd = currentIndex >= cards.length;
+  const prevCard = currentIndex > 0 ? cards[currentIndex - 1] : null;
   const currentCard = !isEnd ? cards[currentIndex] : null;
   const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
   const thirdCard = currentIndex + 2 < cards.length ? cards[currentIndex + 2] : null;
@@ -45,48 +46,48 @@ export function CardStack({
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-300, 0, 300], [-14, 0, 14]);
 
-  // Dynamic transforms for Layer 2 (middle card) as top card is dragged
-  const nextScale = useTransform(x, [-250, 0, 250], [1, 0.96, 1]);
-  const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
-  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
-  const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
+  // Dynamic transforms for Layer 2 (middle card) as top card is dragged right
+  const nextScale = useTransform(x, [0, 250], [0.96, 1], { clamp: true });
+  const nextY = useTransform(x, [0, 250], [6, 0], { clamp: true });
+  const nextOpacity = useTransform(x, [0, 250], [0.9, 1], { clamp: true });
+  const nextRotate = useTransform(x, [0, 250], [stackRightRotate, 0], { clamp: true });
+
+  // Dynamic transforms for Previous Card pulling IN from the right when dragged left (x < 0)
+  const prevX = useTransform(x, [-260, 0], [0, 480], { clamp: true });
+  const prevRotate = useTransform(x, [-260, 0], [0, 12], { clamp: true });
+  const prevOpacity = useTransform(x, [-260, -40, 0], [1, 0.95, 0], { clamp: true });
 
   const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isAnimatingOut) return;
 
-    const threshold = 70;
-    const velocityThreshold = 250;
+    const threshold = 65;
+    const velocityThreshold = 220;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
       // Forward / Swipe Right -> Animate off-screen to the right then advance
       setIsAnimatingOut(true);
       triggerHaptic('snap');
       await animate(x, 600, {
-        duration: 0.18,
-        ease: 'easeOut',
+        duration: 0.2,
+        ease: [0.32, 0.72, 0, 1],
       });
       x.set(0);
       setIsAnimatingOut(false);
       onNext();
-    } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
-      if (currentIndex > 0) {
-        // Reverse / Swipe Left -> Previous card flies back IN from the right (exact reverse of swipe right)
-        setIsAnimatingOut(true);
-        triggerHaptic('light');
-        onPrev();
-        x.set(550);
-        setIsAnimatingOut(false);
-        animate(x, 0, {
-          type: 'spring',
-          damping: 22,
-          stiffness: 280,
-        });
-      } else {
-        triggerHaptic('light');
-        animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
-      }
+    } else if ((info.offset.x < -threshold || info.velocity.x < -velocityThreshold) && currentIndex > 0) {
+      // Reverse / Swipe Left -> Smoothly pull previous card all the way in from the right
+      setIsAnimatingOut(true);
+      triggerHaptic('light');
+      await animate(x, -260, {
+        duration: 0.22,
+        ease: [0.16, 1, 0.3, 1],
+      });
+      onPrev();
+      x.set(0);
+      setIsAnimatingOut(false);
     } else {
-      animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
+      // Return to center spring
+      animate(x, 0, { type: 'spring', damping: 24, stiffness: 320 });
     }
   };
 
@@ -292,7 +293,7 @@ export function CardStack({
         </motion.div>
       )}
 
-      {/* Layer 1: Active Top Draggable Card */}
+      {/* Layer 1: Active Draggable Card */}
       {currentCard && (
         <motion.div
           key={`current-${currentCard.id}`}
@@ -384,6 +385,100 @@ export function CardStack({
             {currentCard.isCover
               ? (currentCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
               : (currentCard.edition || editionText)}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Layer 0 / Overlay: Previous Card (interactively pulled IN from right as you drag left) */}
+      {prevCard && (
+        <motion.div
+          key={`prev-${prevCard.id}`}
+          aria-hidden="true"
+          style={{
+            ...getCardStyle(prevCard.isCover),
+            x: prevX,
+            rotate: prevRotate,
+            opacity: prevOpacity,
+            zIndex: 20,
+          }}
+          className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border pointer-events-none will-change-transform overflow-hidden"
+        >
+          {/* Paper Fiber Grain & Dust Fleck Layer */}
+          <div
+            aria-hidden="true"
+            className={`absolute inset-0 pointer-events-none rounded-[32px] ${
+              prevCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
+            }`}
+            style={{
+              backgroundImage: PAPER_TEXTURE_DATA_URI,
+              backgroundSize: '220px 220px',
+            }}
+          />
+
+          {/* Top Edge Wear Highlight */}
+          <div
+            aria-hidden="true"
+            className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
+              prevCard.isCover
+                ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
+                : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
+            }`}
+          />
+
+          {/* Frosted Scotch Tape */}
+          <div
+            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
+              prevCard.isCover
+                ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
+                : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
+            }`}
+          />
+
+          <div />
+
+          {/* Previous Card Content */}
+          {prevCard.isCover ? (
+            <div className="relative z-10 my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+              <h2
+                className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight"
+                style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
+              >
+                {prevCard.coverTitle || prevCard.text}
+              </h2>
+              {prevCard.coverTagline && (
+                <p
+                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
+                  style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+                >
+                  {prevCard.coverTagline}
+                </p>
+              )}
+            </div>
+          ) : (
+            <div className="relative z-10 my-auto px-2 sm:px-6 flex items-center justify-center">
+              <p
+                className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance"
+                style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+              >
+                {prevCard.text}
+              </p>
+            </div>
+          )}
+
+          {/* Card Footer */}
+          <div
+            className={`relative z-10 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
+              prevCard.isCover ? 'text-white/80' : 'text-[#C10016]'
+            }`}
+            style={{
+              textShadow: prevCard.isCover
+                ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
+                : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
+            }}
+          >
+            {prevCard.isCover
+              ? (prevCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
+              : (prevCard.edition || editionText)}
           </div>
         </motion.div>
       )}
