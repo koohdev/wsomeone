@@ -129,7 +129,7 @@ export function CardStack({
     };
   };
 
-  if (isEnd) {
+  if (isEnd && !isShuffling) {
     return (
       <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[320px] landscape:sm:max-w-[350px] items-center justify-center px-4">
         <motion.div
@@ -195,242 +195,308 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[320px] landscape:sm:max-w-[350px] items-center justify-center px-4 select-none touch-none">
-      {/* Layer 3: Bottom card with shuffle cascade */}
-      {thirdCard && (
-        <motion.div
-          key={`third-${thirdCard.id}`}
-          aria-hidden="true"
-          animate={
-            isShuffling
-              ? {
-                  x: [0, -55, 60, -20, 0],
-                  y: [12, -18, 14, -6, 12],
-                  rotate: [stackLeftRotate, -16, 10, -5, stackLeftRotate],
-                  scale: [0.93, 0.96, 0.92, 0.94, 0.93],
-                }
-              : undefined
-          }
-          transition={{ duration: 0.62, ease: [0.34, 1.56, 0.64, 1] }}
-          className="absolute inset-x-5 top-2 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 will-change-transform overflow-hidden"
-          style={{
-            ...getCardStyle(thirdCard.isCover),
-            transform: isShuffling ? undefined : `translateY(12px) scale(0.93) rotate(${stackLeftRotate}deg)`,
-            zIndex: 1,
-          }}
-        />
-      )}
-
-      {/* Layer 2: Middle card with shuffle fan to the RIGHT */}
-      {nextCard && (
-        <motion.div
-          key={`next-${nextCard.id}`}
-          aria-hidden="true"
-          animate={
-            isShuffling
-              ? {
-                  x: [0, 85, -35, 15, 0],
-                  y: [0, 10, -8, 4, 0],
-                  rotate: [stackRightRotate, 15, -8, 4, stackRightRotate],
-                  scale: [0.96, 1.02, 0.95, 0.98, 0.96],
-                }
-              : undefined
-          }
-          transition={{ duration: 0.62, ease: [0.34, 1.56, 0.64, 1] }}
-          style={{
-            ...getCardStyle(nextCard.isCover),
-            scale: isShuffling ? undefined : nextScale,
-            y: isShuffling ? undefined : nextY,
-            rotate: isShuffling ? undefined : nextRotate,
-            opacity: nextOpacity,
-            zIndex: 2,
-          }}
-          className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none will-change-transform overflow-hidden"
-        >
-          {/* Paper Fiber Grain & Dust Fleck Layer */}
-          <div
-            aria-hidden="true"
-            className={`absolute inset-0 pointer-events-none rounded-[32px] ${
-              nextCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
-            }`}
-            style={{
-              backgroundImage: PAPER_TEXTURE_DATA_URI,
-              backgroundSize: '220px 220px',
+      {/* SHUFFLE CHOREOGRAPHY: 1.6s Full Riffle & Interweave Sequence */}
+      {isShuffling ? (
+        <div className="relative flex aspect-[1.38/1] w-full items-center justify-center pointer-events-none">
+          {/* 1. Left Deck Packet */}
+          <motion.div
+            animate={{
+              x: [0, -115, -115, -70, -35, 0],
+              y: [0, 6, 6, -6, 2, 0],
+              rotate: [0, -16, -16, -9, -3, 0],
+              scale: [1, 0.98, 0.98, 0.99, 1, 1],
             }}
-          />
+            transition={{ duration: 1.6, times: [0, 0.22, 0.55, 0.78, 0.92, 1], ease: 'easeInOut' }}
+            style={{ ...getCardStyle(false), zIndex: 1 }}
+            className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border overflow-hidden opacity-75"
+          >
+            <div
+              className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
+              style={{ backgroundImage: PAPER_TEXTURE_DATA_URI, backgroundSize: '220px 220px' }}
+            />
+          </motion.div>
 
-          {/* Top Edge Wear Highlight */}
-          <div
-            aria-hidden="true"
-            className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
-              nextCard.isCover
-                ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
-                : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
-            }`}
-          />
+          {/* 2. Right Deck Packet */}
+          <motion.div
+            animate={{
+              x: [0, 115, 115, 70, 35, 0],
+              y: [0, 6, 6, -6, 2, 0],
+              rotate: [0, 16, 16, 9, 3, 0],
+              scale: [1, 0.98, 0.98, 0.99, 1, 1],
+            }}
+            transition={{ duration: 1.6, times: [0, 0.22, 0.55, 0.78, 0.92, 1], ease: 'easeInOut' }}
+            style={{ ...getCardStyle(false), zIndex: 2 }}
+            className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border overflow-hidden opacity-75"
+          >
+            <div
+              className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
+              style={{ backgroundImage: PAPER_TEXTURE_DATA_URI, backgroundSize: '220px 220px' }}
+            />
+          </motion.div>
 
-          {/* Frosted Scotch Tape */}
-          <div
-            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
-              nextCard.isCover
-                ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
-                : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
-            }`}
-          />
+          {/* 3. Fluttering Card 1 (Left to Center Riffle) */}
+          <motion.div
+            animate={{
+              x: [0, -100, -45, 15, -4, 0],
+              y: [0, -12, 14, -8, 2, 0],
+              rotate: [0, -14, 10, -4, 2, 0],
+              scale: [0.96, 1.01, 0.98, 1, 1, 1],
+            }}
+            transition={{ duration: 1.6, times: [0, 0.25, 0.58, 0.8, 0.93, 1], ease: 'easeInOut' }}
+            style={{ ...getCardStyle(false), zIndex: 3 }}
+            className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border overflow-hidden"
+          >
+            <div
+              className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
+              style={{ backgroundImage: PAPER_TEXTURE_DATA_URI, backgroundSize: '220px 220px' }}
+            />
+          </motion.div>
 
-          <div />
+          {/* 4. Fluttering Card 2 (Right to Center Riffle) */}
+          <motion.div
+            animate={{
+              x: [0, 100, 45, -15, 4, 0],
+              y: [0, -14, 10, -6, 2, 0],
+              rotate: [0, 14, -10, 4, -2, 0],
+              scale: [0.96, 1.01, 0.98, 1, 1, 1],
+            }}
+            transition={{ duration: 1.6, times: [0, 0.28, 0.62, 0.82, 0.94, 1], ease: 'easeInOut' }}
+            style={{ ...getCardStyle(false), zIndex: 4 }}
+            className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border overflow-hidden"
+          >
+            <div
+              className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
+              style={{ backgroundImage: PAPER_TEXTURE_DATA_URI, backgroundSize: '220px 220px' }}
+            />
+          </motion.div>
 
-          {/* Next Card Content */}
-          {nextCard.isCover ? (
-            <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
-              <h2
-                className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
-                style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
-              >
-                {nextCard.coverTitle || nextCard.text}
-              </h2>
-              {nextCard.coverTagline && (
-                <p
-                  className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
-                  style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
-                >
-                  {nextCard.coverTagline}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
-              <p
-                className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance"
-                style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
-              >
-                {nextCard.text}
-              </p>
-            </div>
+          {/* 5. Top Cover Arch & Bridge Snap */}
+          <motion.div
+            animate={{
+              x: [0, -20, 20, -10, 0],
+              y: [0, -24, -18, 6, 0],
+              rotate: [0, -3, 3, -1, 0],
+              scale: [1, 1.04, 1.03, 0.99, 1],
+            }}
+            transition={{ duration: 1.6, times: [0, 0.35, 0.7, 0.88, 1], ease: 'easeInOut' }}
+            style={{ ...getCardStyle(true), zIndex: 5 }}
+            className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border p-6 flex flex-col items-center justify-center text-center overflow-hidden shadow-xl"
+          >
+            <div
+              className="absolute inset-0 opacity-30 mix-blend-overlay rounded-[32px]"
+              style={{ backgroundImage: PAPER_TEXTURE_DATA_URI, backgroundSize: '220px 220px' }}
+            />
+            <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
+              SHUFFLING DECK...
+            </h2>
+          </motion.div>
+        </div>
+      ) : (
+        <>
+          {/* Layer 3: Bottom card consistently peeking to the LEFT */}
+          {thirdCard && (
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-5 top-2 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 will-change-transform overflow-hidden"
+              style={{
+                ...getCardStyle(thirdCard.isCover),
+                transform: `translateY(12px) scale(0.93) rotate(${stackLeftRotate}deg)`,
+                zIndex: 1,
+              }}
+            />
           )}
 
-          {/* Card Footer */}
-          <div
-            className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
-              nextCard.isCover ? 'text-white/80' : 'text-[#C10016]'
-            }`}
-            style={{
-              textShadow: nextCard.isCover
-                ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
-                : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
-            }}
-          >
-            {nextCard.isCover
-              ? (nextCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
-              : (nextCard.edition || editionText)}
-          </div>
-        </motion.div>
-      )}
+          {/* Layer 2: Middle card consistently peeking to the RIGHT */}
+          {nextCard && (
+            <motion.div
+              key={`next-${nextCard.id}`}
+              aria-hidden="true"
+              style={{
+                ...getCardStyle(nextCard.isCover),
+                scale: nextScale,
+                y: nextY,
+                rotate: nextRotate,
+                opacity: nextOpacity,
+                zIndex: 2,
+              }}
+              className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none will-change-transform overflow-hidden"
+            >
+              {/* Paper Fiber Grain & Dust Fleck Layer */}
+              <div
+                aria-hidden="true"
+                className={`absolute inset-0 pointer-events-none rounded-[32px] ${
+                  nextCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
+                }`}
+                style={{
+                  backgroundImage: PAPER_TEXTURE_DATA_URI,
+                  backgroundSize: '220px 220px',
+                }}
+              />
 
-      {/* Layer 1: Active Top Card with shuffle fan to the LEFT */}
-      {currentCard && (
-        <motion.div
-          key={`current-${currentCard.id}`}
-          drag={isAnimatingOut || isShuffling ? false : 'x'}
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.85}
-          onDragEnd={handleDragEnd}
-          animate={
-            isShuffling
-              ? {
-                  x: [0, -85, 30, -12, 0],
-                  y: [0, -10, 6, -3, 0],
-                  rotate: [0, -14, 6, -3, 0],
-                  scale: [1, 1.03, 0.97, 1.01, 1],
-                }
-              : undefined
-          }
-          transition={{ duration: 0.62, ease: [0.34, 1.56, 0.64, 1] }}
-          style={{
-            ...getCardStyle(currentCard.isCover),
-            x: isShuffling ? undefined : x,
-            rotate: isShuffling ? undefined : rotate,
-            zIndex: 10,
-          }}
-          className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden"
-        >
-          {/* Paper Fiber Grain & Dust Fleck Layer */}
-          <div
-            aria-hidden="true"
-            className={`absolute inset-0 pointer-events-none rounded-[32px] ${
-              currentCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
-            }`}
-            style={{
-              backgroundImage: PAPER_TEXTURE_DATA_URI,
-              backgroundSize: '220px 220px',
-            }}
-          />
+              {/* Top Edge Wear Highlight */}
+              <div
+                aria-hidden="true"
+                className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
+                  nextCard.isCover
+                    ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
+                    : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
+                }`}
+              />
 
-          {/* Top Edge Wear & Subtle Highlight */}
-          <div
-            aria-hidden="true"
-            className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
-              currentCard.isCover
-                ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
-                : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
-            }`}
-          />
+              {/* Frosted Scotch Tape */}
+              <div
+                className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
+                  nextCard.isCover
+                    ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
+                    : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
+                }`}
+              />
 
-          {/* Frosted Scotch Tape */}
-          <div
-            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
-              currentCard.isCover
-                ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
-                : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
-            }`}
-          />
+              <div />
 
-          <div />
-
-          {/* Question / Cover Content */}
-          {currentCard.isCover ? (
-            <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
-              <h2
-                className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
-                style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
-              >
-                {currentCard.coverTitle || currentCard.text}
-              </h2>
-              {currentCard.coverTagline && (
-                <p
-                  className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
-                  style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
-                >
-                  {currentCard.coverTagline}
-                </p>
+              {/* Next Card Content */}
+              {nextCard.isCover ? (
+                <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
+                  <h2
+                    className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
+                    style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
+                  >
+                    {nextCard.coverTitle || nextCard.text}
+                  </h2>
+                  {nextCard.coverTagline && (
+                    <p
+                      className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
+                      style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+                    >
+                      {nextCard.coverTagline}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
+                  <p
+                    className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance"
+                    style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+                  >
+                    {nextCard.text}
+                  </p>
+                </div>
               )}
-            </div>
-          ) : (
-            <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
-              <p
-                className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance"
-                style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+
+              {/* Card Footer */}
+              <div
+                className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+                  nextCard.isCover ? 'text-white/80' : 'text-[#C10016]'
+                }`}
+                style={{
+                  textShadow: nextCard.isCover
+                    ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
+                    : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
+                }}
               >
-                {currentCard.text}
-              </p>
-            </div>
+                {nextCard.isCover
+                  ? (nextCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
+                  : (nextCard.edition || editionText)}
+              </div>
+            </motion.div>
           )}
 
-          {/* Card Footer: wsomeone without wide spaces */}
-          <div
-            className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
-              currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
-            }`}
-            style={{
-              textShadow: currentCard.isCover
-                ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
-                : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
-            }}
-          >
-            {currentCard.isCover
-              ? (currentCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
-              : (currentCard.edition || editionText)}
-          </div>
-        </motion.div>
+          {/* Layer 1: Active Top Draggable Card */}
+          {currentCard && (
+            <motion.div
+              key={`current-${currentCard.id}`}
+              drag={isAnimatingOut ? false : 'x'}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.85}
+              onDragEnd={handleDragEnd}
+              style={{
+                ...getCardStyle(currentCard.isCover),
+                x,
+                rotate,
+                zIndex: 10,
+              }}
+              className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden"
+            >
+              {/* Paper Fiber Grain & Dust Fleck Layer */}
+              <div
+                aria-hidden="true"
+                className={`absolute inset-0 pointer-events-none rounded-[32px] ${
+                  currentCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
+                }`}
+                style={{
+                  backgroundImage: PAPER_TEXTURE_DATA_URI,
+                  backgroundSize: '220px 220px',
+                }}
+              />
+
+              {/* Top Edge Wear & Subtle Highlight */}
+              <div
+                aria-hidden="true"
+                className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
+                  currentCard.isCover
+                    ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
+                    : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
+                }`}
+              />
+
+              {/* Frosted Scotch Tape */}
+              <div
+                className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
+                  currentCard.isCover
+                    ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
+                    : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
+                }`}
+              />
+
+              <div />
+
+              {/* Question / Cover Content */}
+              {currentCard.isCover ? (
+                <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
+                  <h2
+                    className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
+                    style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
+                  >
+                    {currentCard.coverTitle || currentCard.text}
+                  </h2>
+                  {currentCard.coverTagline && (
+                    <p
+                      className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
+                      style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+                    >
+                      {currentCard.coverTagline}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
+                  <p
+                    className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance"
+                    style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+                  >
+                    {currentCard.text}
+                  </p>
+                </div>
+              )}
+
+              {/* Card Footer: wsomeone without wide spaces */}
+              <div
+                className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+                  currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
+                }`}
+                style={{
+                  textShadow: currentCard.isCover
+                    ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
+                    : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
+                }}
+              >
+                {currentCard.isCover
+                  ? (currentCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
+                  : (currentCard.edition || editionText)}
+              </div>
+            </motion.div>
+          )}
+        </>
       )}
     </div>
   );

@@ -105,6 +105,7 @@ export function CardView({
     setIsShuffling(true);
     triggerHaptic('shuffle');
 
+    // Update the card sequence midway through the riffle fan
     setTimeout(() => {
       const coverCard = deck.cards[0];
       const questionCards = deck.cards.slice(1);
@@ -112,11 +113,11 @@ export function CardView({
       const newCards = [coverCard, ...shuffledQuestions];
       setCards(newCards);
       setCurrentIndex(0);
-    }, 200);
+    }, 750);
 
     setTimeout(() => {
       setIsShuffling(false);
-    }, 650);
+    }, 1600);
   }, [deck.cards, triggerHaptic]);
 
   const handleRestartDeck = useCallback(() => {
@@ -128,11 +129,11 @@ export function CardView({
       if (onResetProgress) {
         onResetProgress(deck.id);
       }
-    }, 200);
+    }, 750);
 
     setTimeout(() => {
       setIsShuffling(false);
-    }, 650);
+    }, 1600);
   }, [deck.id, onResetProgress, triggerHaptic]);
 
   const handleNext = useCallback(() => {
