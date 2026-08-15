@@ -1,0 +1,134 @@
+export interface Card {
+  id: string;
+  text: string;
+  edition?: string;
+}
+
+export interface Deck {
+  id: string;
+  title: string;
+  editionText: string;
+  cards: Card[];
+}
+
+export const DECKS: Deck[] = [
+  {
+    id: 'level-1-perception',
+    title: 'LEVEL 1: PERCEPTION',
+    editionText: 'WSOMEONE',
+    cards: [
+      { id: 'p-1', text: "WHAT'S THE FIRST THING YOU NOTICED ABOUT ME?" },
+      { id: 'p-2', text: 'ON A SCALE OF 1-10, HOW APPROACHABLE DO I LOOK?' },
+      { id: 'p-3', text: 'WHAT ASSUMPTION DID YOU SECRETLY MAKE ABOUT ME?' },
+      { id: 'p-4', text: 'WHAT KIND OF MUSIC DO YOU THINK I LISTEN TO?' },
+      { id: 'p-5', text: 'DO I LOOK LIKE AN INTROVERT OR AN EXTROVERT?' },
+      { id: 'p-6', text: 'WHAT DOES MY OUTFIT SAY ABOUT MY PERSONALITY?' },
+      { id: 'p-7', text: 'DO I SEEM LIKE SOMEONE WHO EASILY TRUSTS OTHERS?' },
+      { id: 'p-8', text: 'WHAT CAREER WOULD YOU GUESS I WORK IN?' },
+      { id: 'p-9', text: 'DO YOU THINK I FALL IN LOVE EASILY?' },
+      { id: 'p-10', text: 'WHAT COMPLIMENT DO YOU THINK I HEAR MOST?' },
+      { id: 'p-11', text: 'WHAT VIBE DID I GIVE OFF THE FIRST MINUTE WE MET?' },
+      { id: 'p-12', text: 'DO I LOOK LIKE SOMEONE WHO KEEPS A JOURNAL?' },
+      { id: 'p-13', text: 'WHAT TRAIT OF MINE SEEMED INTIMIDATING AT FIRST?' },
+      { id: 'p-14', text: 'DO YOU THINK I AM A MORNING OR LATE NIGHT PERSON?' },
+      { id: 'p-15', text: 'WHAT IS ONE HABIT YOU WOULD GUESS I HAVE?' },
+      { id: 'p-16', text: 'DO YOU THINK I AM DRIVEN BY LOGIC OR EMOTION?' },
+      { id: 'p-17', text: 'WHAT KIND OF ENERGY DO I BRING INTO A ROOM?' },
+      { id: 'p-18', text: 'DO I SEEM LIKE SOMEONE WHO HOLDS GRUDGES?' },
+    ],
+  },
+  {
+    id: 'level-2-connection',
+    title: 'LEVEL 2: CONNECTION',
+    editionText: 'WSOMEONE',
+    cards: [
+      { id: 'c-1', text: "WHAT IS SOMETHING YOU WOULDN'T WANT TO CHANGE ABOUT YOURSELF?" },
+      { id: 'c-2', text: 'WHAT WAS MY LAST BREAKUP LIKE FOR YOU?' },
+      { id: 'c-3', text: "FINISH THE SENTENCE: YOU'RE THE ONLY PERSON I CAN _____ WITH." },
+      { id: 'c-4', text: "WHAT'S A COMPLIMENT YOU SECRETLY WISH YOU RECEIVED MORE?" },
+      { id: 'c-5', text: 'WHAT ARE YOU CURRENTLY IN DENIAL ABOUT?' },
+      { id: 'c-6', text: 'WHEN WAS THE LAST TIME YOU CRIED IN FRONT OF SOMEONE?' },
+      { id: 'c-7', text: 'WHAT PART OF YOUR LIFE CURRENTLY EXHAUSTS YOU?' },
+      { id: 'c-8', text: 'WHAT IS A LESSON YOU HAD TO LEARN THE HARD WAY?' },
+      { id: 'c-9', text: "HOW DO YOU KNOW WHEN I'M NOT REALLY OKAY?" },
+      { id: 'c-10', text: 'WHAT IS SOMETHING YOU WISH YOU COULD FORGIVE YOURSELF FOR?' },
+      { id: 'c-11', text: "DO YOU FEEL LIKE YOU'RE LIVING FOR YOURSELF?" },
+      { id: 'c-12', text: 'WHAT WOULD YOUNGER YOU BE MOST PROUD OF TODAY?' },
+      { id: 'c-13', text: 'WHAT IS A FEAR YOU RARELY ADMIT TO ANYONE?' },
+      { id: 'c-14', text: 'WHEN WAS THE LAST TIME YOU FELT TRULY UNDERSTOOD?' },
+      { id: 'c-15', text: 'WHAT IS A SECRET DREAM YOU RARELY TALK ABOUT?' },
+      { id: 'c-16', text: 'WHAT IS SOMETHING SOMEONE SAID THAT STILL STICKS WITH YOU?' },
+    ],
+  },
+  {
+    id: 'level-3-reflection',
+    title: 'LEVEL 3: REFLECTION',
+    editionText: 'WSOMEONE',
+    cards: [
+      { id: 'r-1', text: 'WHAT HAS THIS CONVERSATION TAUGHT YOU ABOUT YOURSELF?' },
+      { id: 'r-2', text: 'IF YOU COULD RELIVE AN ICONIC DAY IN OUR FRIENDSHIP, WHAT WOULD IT BE?' },
+      { id: 'r-3', text: 'WHAT DO YOU THINK MY GREATEST STRENGTH IS?' },
+      { id: 'r-4', text: "WHAT IS ONE LESSON YOU'VE LEARNED FROM ME?" },
+      { id: 'r-5', text: 'HOW HAVE I CHANGED SINCE YOU FIRST MET ME?' },
+      { id: 'r-6', text: 'WHAT QUESTION WERE YOU MOST AFRAID TO ANSWER?' },
+      { id: 'r-7', text: 'WHAT IS SOMETHING YOU ADMIRE ABOUT HOW I HANDLE HARD TIMES?' },
+      { id: 'r-8', text: 'WHAT WILL YOU REMEMBER MOST ABOUT OUR TIME TOGETHER?' },
+      { id: 'r-9', text: 'WHAT ADVICE WOULD YOU GIVE ME FOR MY NEXT CHAPTER?' },
+      { id: 'r-10', text: 'WHAT WAS THE MOST HEALING PART OF TODAY?' },
+      { id: 'r-11', text: 'HOW DO YOU FEEL WALKING AWAY FROM THIS SESSION?' },
+      { id: 'r-12', text: 'WHAT DO YOU THINK WE STILL HAVE TO TEACH EACH OTHER?' },
+    ],
+  },
+  {
+    id: 'dating-edition',
+    title: 'DATING SURVIVAL KIT',
+    editionText: 'WSOMEONE\nDATING SURVIVAL KIT',
+    cards: [
+      { id: 'd-1', text: "WHAT'S A RED FLAG YOU IGNORE WHEN YOU LIKE SOMEONE?" },
+      { id: 'd-2', text: 'WHAT WAS THE EXACT MOMENT YOU KNEW YOU LIKED ME?' },
+      { id: 'd-3', text: 'WHAT DO YOU CRAVE IN A RELATIONSHIP BUT NEVER ASK FOR?' },
+      { id: 'd-4', text: 'DO YOU FEEL SEEN BY ME IN THE EXACT WAY YOU WANT?' },
+      { id: 'd-5', text: 'WHAT IS ONE HABIT OF MINE THAT ADORABLY ANNOYS YOU?' },
+      { id: 'd-6', text: 'WHEN WAS THE LAST TIME YOU FELT A REAL SPARK WITH ME?' },
+      { id: 'd-7', text: 'WHAT DOES YOUR IDEAL MORNING TOGETHER LOOK LIKE?' },
+      { id: 'd-8', text: 'FINISH THE SENTENCE: I FEEL CLOSEST TO YOU WHEN WE _____.' },
+      { id: 'd-9', text: 'WHAT IS A CONVERSATION WE HAVE BEEN AVOIDING?' },
+      { id: 'd-10', text: 'WHAT MADE YOU FEEL SAFE WITH ME?' },
+      { id: 'd-11', text: 'WHAT IS A BOUNDARY YOU ARE LEARNING TO UPHOLD IN LOVE?' },
+      { id: 'd-12', text: 'WHAT IS A COMPLIMENT YOU SECRETLY WISH I SAID MORE?' },
+    ],
+  },
+  {
+    id: 'friendship-edition',
+    title: 'FRIENDSHIP EDITION',
+    editionText: 'WSOMEONE\nFRIENDSHIP EDITION',
+    cards: [
+      { id: 'f-1', text: 'IF YOU COULD RELIVE AN ICONIC DAY IN OUR FRIENDSHIP, WHAT WOULD IT BE?' },
+      { id: 'f-2', text: 'WHEN DID YOU REALIZE WE WERE GOING TO BE REAL FRIENDS?' },
+      { id: 'f-3', text: 'WHAT WAS MY LAST BREAKUP LIKE FOR YOU?' },
+      { id: 'f-4', text: "FINISH THE SENTENCE: YOU'RE THE ONLY PERSON I CAN _____ WITH." },
+      { id: 'f-5', text: 'WHAT DO I DO THAT ALWAYS MAKES YOU LAUGH?' },
+      { id: 'f-6', text: "WHAT IS SOMETHING YOU'VE NEVER THANKED ME FOR?" },
+      { id: 'f-7', text: 'WHAT IS A MEMORY OF US THAT YOU NEVER WANT TO FORGET?' },
+      { id: 'f-8', text: 'HOW CAN I BE A BETTER FRIEND TO YOU RIGHT NOW?' },
+      { id: 'f-9', text: 'WHAT WOULD YOU DEFEND ABOUT ME TO ANYONE ELSE?' },
+      { id: 'f-10', text: 'WHAT ADVENTURE DO WE STILL NEED TO TAKE TOGETHER?' },
+    ],
+  },
+  {
+    id: 'late-night',
+    title: 'LATE NIGHT',
+    editionText: 'WSOMEONE\nLATE NIGHT',
+    cards: [
+      { id: 'ln-1', text: 'WHAT THOUGHT KEEPS YOU AWAKE AT 3 AM?' },
+      { id: 'ln-2', text: 'WHAT HAVE YOU NEVER ADMITTED OUT LOUD UNTIL TONIGHT?' },
+      { id: 'ln-3', text: 'WHO FROM YOUR PAST DO YOU STILL WISH YOU COULD APOLOGIZE TO?' },
+      { id: 'ln-4', text: 'WHAT IS YOUR BIGGEST FEAR ABOUT GROWING OLDER?' },
+      { id: 'ln-5', text: 'WHAT WOULD YOU DO IF NO ONE COULD EVER JUDGE YOU?' },
+      { id: 'ln-6', text: 'WHAT IS A REGRET THAT STILL VISITS YOU?' },
+      { id: 'ln-7', text: 'WHAT WAS THE LONELIEST MOMENT OF YOUR LIFE?' },
+      { id: 'ln-8', text: 'WHAT ARE YOU AFRAID WILL NEVER CHANGE?' },
+      { id: 'ln-9', text: 'IF TONIGHT WAS YOUR LAST NIGHT ON EARTH, WHAT WOULD YOU SAY?' },
+    ],
+  },
+];
