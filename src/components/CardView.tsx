@@ -126,11 +126,11 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
       <BottomSheet
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
-        snapPoints={[0.58, 0.9]}
+        snapPoints={[0.62, 0.92]}
         title="TOPICS"
       >
-        <div className="flex flex-col gap-2.5 mt-2">
-          {/* Deck List inside Bottom Sheet */}
+        <div className="flex flex-col gap-3 mt-2">
+          {/* Deck List inside Bottom Sheet styled as tactile cards */}
           {DECKS.map((d) => {
             const isActive = d.id === deck.id;
             return (
@@ -141,15 +141,29 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
                   onSelectDeck(d);
                   setIsSheetOpen(false);
                 }}
-                className={`w-full rounded-2xl p-4 text-center border transition-all cursor-pointer ${
+                className={`relative w-full rounded-2xl p-4 text-center border transition-all cursor-pointer overflow-hidden ${
                   isActive
-                    ? 'bg-[#C10016] text-white border-[#C10016] shadow-sm'
-                    : 'bg-white text-[#C10016] border-neutral-200/80 hover:bg-neutral-50 active:scale-[0.98]'
+                    ? 'bg-[#C10016] text-white border-[#A00012] shadow-sm'
+                    : 'bg-[#FAF8F5] text-[#C10016] border-black/10 hover:bg-neutral-50 active:scale-[0.98]'
                 }`}
+                style={{
+                  boxShadow: isActive
+                    ? 'inset 0 1px 1px rgba(255,255,255,0.3), 0 4px 12px rgba(193,0,22,0.2)'
+                    : 'inset 0 1px 1px rgba(255,255,255,0.8), 0 2px 6px rgba(0,0,0,0.04)',
+                }}
               >
                 <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight">
                   {d.title}
                 </h3>
+                {d.description && (
+                  <p
+                    className={`mt-1 text-[11px] font-medium uppercase tracking-tight ${
+                      isActive ? 'text-white/80' : 'text-[#C10016]/70'
+                    }`}
+                  >
+                    {d.description}
+                  </p>
+                )}
               </button>
             );
           })}
