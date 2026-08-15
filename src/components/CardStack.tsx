@@ -67,20 +67,20 @@ export function CardStack({
     const velocityThreshold = 250;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      // Forward / Swipe Right -> Animate all the way off-screen to the right edge of monitor
+      // Forward / Swipe Right -> Gracefully glide all the way off-screen with natural momentum
       setIsAnimatingOut(true);
       triggerHaptic('snap');
       const exitDistance = getExitDistance();
       await animate(x, exitDistance, {
-        duration: 0.28,
-        ease: [0.32, 0.72, 0, 1],
+        duration: 0.58,
+        ease: [0.22, 1, 0.36, 1],
       });
       x.set(0);
       setIsAnimatingOut(false);
       onNext();
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
-        // Reverse / Swipe Left -> Previous card flies back IN from the right edge of the screen
+        // Reverse / Swipe Left -> Previous card smoothly glides back IN from the right edge
         setIsAnimatingOut(true);
         triggerHaptic('light');
         onPrev();
@@ -89,8 +89,9 @@ export function CardStack({
         setIsAnimatingOut(false);
         animate(x, 0, {
           type: 'spring',
-          damping: 24,
-          stiffness: 260,
+          damping: 26,
+          stiffness: 180,
+          mass: 0.9,
         });
       } else {
         triggerHaptic('light');
