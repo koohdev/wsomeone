@@ -211,19 +211,23 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4 select-none touch-none">
-      {/* SHUFFLE CHOREOGRAPHY: 1.6s Full Riffle & Interweave Sequence with Real Question Text */}
+      {/* SHUFFLE CHOREOGRAPHY: 3.0s Riffle + Floating Lift + Heavy Tabletop Drop Landing */}
       {isShuffling ? (
         <div className="relative flex aspect-[1.38/1] w-full items-center justify-center pointer-events-none">
           {/* 1. Left Deck Base Card */}
           {shuffleCard1 && (
             <motion.div
               animate={{
-                x: [0, -115, -115, -70, -35, 0],
-                y: [0, 6, 6, -6, 2, 0],
-                rotate: [0, -16, -16, -9, -3, 0],
-                scale: [1, 0.98, 0.98, 0.99, 1, 1],
+                x: [0, -125, -125, -75, -25, 0, 0, 0],
+                y: [0, 8, 8, -4, -34, 0, -3, 0],
+                rotate: [0, -18, -18, -8, -1, 0, 0, 0],
+                scale: [1, 0.98, 0.98, 1, 1.05, 0.98, 1.01, 1],
               }}
-              transition={{ duration: 1.6, times: [0, 0.22, 0.55, 0.78, 0.92, 1], ease: 'easeInOut' }}
+              transition={{
+                duration: 3.0,
+                times: [0, 0.2, 0.45, 0.72, 0.88, 0.94, 0.97, 1],
+                ease: 'easeInOut',
+              }}
               style={{ ...getCardStyle(false), zIndex: 1 }}
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 landscape:p-4 flex flex-col items-center justify-between text-center border overflow-hidden opacity-85 shadow-lg"
             >
@@ -246,12 +250,16 @@ export function CardStack({
           {shuffleCard2 && (
             <motion.div
               animate={{
-                x: [0, 115, 115, 70, 35, 0],
-                y: [0, 6, 6, -6, 2, 0],
-                rotate: [0, 16, 16, 9, 3, 0],
-                scale: [1, 0.98, 0.98, 0.99, 1, 1],
+                x: [0, 125, 125, 75, 25, 0, 0, 0],
+                y: [0, 8, 8, -4, -34, 0, -3, 0],
+                rotate: [0, 18, 18, 8, 1, 0, 0, 0],
+                scale: [1, 0.98, 0.98, 1, 1.05, 0.98, 1.01, 1],
               }}
-              transition={{ duration: 1.6, times: [0, 0.22, 0.55, 0.78, 0.92, 1], ease: 'easeInOut' }}
+              transition={{
+                duration: 3.0,
+                times: [0, 0.2, 0.45, 0.72, 0.88, 0.94, 0.97, 1],
+                ease: 'easeInOut',
+              }}
               style={{ ...getCardStyle(false), zIndex: 2 }}
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 landscape:p-4 flex flex-col items-center justify-between text-center border overflow-hidden opacity-85 shadow-lg"
             >
@@ -270,16 +278,20 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* 3. Fluttering Card 1 (Left to Center Riffle with Question Text) */}
+          {/* 3. Fluttering Card 1 (Left to Center Riffle) */}
           {shuffleCard3 && (
             <motion.div
               animate={{
-                x: [0, -100, -45, 15, -4, 0],
-                y: [0, -12, 14, -8, 2, 0],
-                rotate: [0, -14, 10, -4, 2, 0],
-                scale: [0.96, 1.01, 0.98, 1, 1, 1],
+                x: [0, -110, -50, 20, 0, 0, 0],
+                y: [0, -14, 16, -8, -36, 0, 0],
+                rotate: [0, -15, 12, -4, 0, 0, 0],
+                scale: [0.96, 1.02, 0.98, 1, 1.05, 1, 1],
               }}
-              transition={{ duration: 1.6, times: [0, 0.25, 0.58, 0.8, 0.93, 1], ease: 'easeInOut' }}
+              transition={{
+                duration: 3.0,
+                times: [0, 0.25, 0.52, 0.75, 0.88, 0.94, 1],
+                ease: 'easeInOut',
+              }}
               style={{ ...getCardStyle(false), zIndex: 3 }}
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 landscape:p-4 flex flex-col items-center justify-between text-center border overflow-hidden shadow-md"
             >
@@ -298,16 +310,20 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* 4. Fluttering Card 2 (Right to Center Riffle with Question Text) */}
+          {/* 4. Fluttering Card 2 (Right to Center Riffle) */}
           {shuffleCard4 && (
             <motion.div
               animate={{
-                x: [0, 100, 45, -15, 4, 0],
-                y: [0, -14, 10, -6, 2, 0],
-                rotate: [0, 14, -10, 4, -2, 0],
-                scale: [0.96, 1.01, 0.98, 1, 1, 1],
+                x: [0, 110, 50, -20, 0, 0, 0],
+                y: [0, -16, 12, -6, -36, 0, 0],
+                rotate: [0, 15, -12, 4, 0, 0, 0],
+                scale: [0.96, 1.02, 0.98, 1, 1.05, 1, 1],
               }}
-              transition={{ duration: 1.6, times: [0, 0.28, 0.62, 0.82, 0.94, 1], ease: 'easeInOut' }}
+              transition={{
+                duration: 3.0,
+                times: [0, 0.28, 0.56, 0.77, 0.88, 0.94, 1],
+                ease: 'easeInOut',
+              }}
               style={{ ...getCardStyle(false), zIndex: 4 }}
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 landscape:p-4 flex flex-col items-center justify-between text-center border overflow-hidden shadow-md"
             >
@@ -326,16 +342,20 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* 5. Top Red Cover Arch & Bridge Snap */}
+          {/* 5. Top Cover Arch, Hover Lift & Heavy Gravity Drop Landing */}
           {shuffleCover && (
             <motion.div
               animate={{
-                x: [0, -20, 20, -10, 0],
-                y: [0, -24, -18, 6, 0],
-                rotate: [0, -3, 3, -1, 0],
-                scale: [1, 1.04, 1.03, 0.99, 1],
+                x: [0, -25, 25, -10, 0, 0, 0, 0],
+                y: [0, -26, -20, 6, -38, 0, -4, 0],
+                rotate: [0, -4, 4, -1, 0, 0, 0, 0],
+                scale: [1, 1.04, 1.03, 1, 1.07, 0.97, 1.01, 1],
               }}
-              transition={{ duration: 1.6, times: [0, 0.35, 0.7, 0.88, 1], ease: 'easeInOut' }}
+              transition={{
+                duration: 3.0,
+                times: [0, 0.28, 0.58, 0.74, 0.88, 0.94, 0.97, 1],
+                ease: 'easeInOut',
+              }}
               style={{ ...getCardStyle(true), zIndex: 5 }}
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border p-6 landscape:p-4 flex flex-col items-center justify-between text-center overflow-hidden shadow-2xl"
             >
@@ -471,7 +491,7 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* Layer 1: Active Top Draggable Card (Immediately interactive on swipe) */}
+          {/* Layer 1: Active Top Draggable Card */}
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
@@ -567,7 +587,7 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* Independently Exiting Discarded Cards (allows zero-lag instant continuous swiping) */}
+          {/* Independently Exiting Discarded Cards */}
           {exitingCards.map(({ id, card, startX }) => (
             <motion.div
               key={id}
