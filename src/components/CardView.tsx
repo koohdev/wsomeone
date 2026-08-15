@@ -8,6 +8,7 @@ import { useHaptics } from '@/hooks/useHaptics';
 import { BottomSheet } from './motion/bottom-sheet';
 import { DECKS } from '@/data/decks';
 import { RotateCcw } from 'lucide-react';
+import NumberFlow from '@number-flow/react';
 
 interface CardViewProps {
   deck: Deck;
@@ -30,7 +31,6 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
 
   const handleReshuffle = useCallback(() => {
-    // Keep cover card at index 0 and shuffle the rest of the question cards
     const coverCard = deck.cards[0];
     const questionCards = deck.cards.slice(1);
     const shuffledQuestions = [...questionCards].sort(() => Math.random() - 0.5);
@@ -80,10 +80,16 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
 
   return (
     <div className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
-      {/* Top Bar: Centered Counter */}
+      {/* Top Bar: Centered Counter with NumberFlow Animation */}
       <header className="relative z-30 flex items-center justify-center px-6 pt-6 sm:px-10 sm:pt-8 w-full max-w-xl mx-auto">
-        <div className="text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
-          {currentIndex >= totalCards ? `${totalCards}/${totalCards}` : `${displayIndex}/${totalCards}`}
+        <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
+          <NumberFlow
+            value={displayIndex}
+            transformTiming={{ duration: 350, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
+            spinTiming={{ duration: 350, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
+            opacityTiming={{ duration: 200, easing: 'ease-out' }}
+          />
+          <span className="ml-0.5">/{totalCards}</span>
         </div>
       </header>
 
