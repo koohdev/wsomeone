@@ -48,7 +48,6 @@ export function CardStack({
     const velocityThreshold = 250;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      // Swiped Right -> Animate off-screen to the right then advance
       setIsAnimatingOut(true);
       triggerHaptic('snap');
       await animate(x, 600, {
@@ -60,7 +59,6 @@ export function CardStack({
       onNext();
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
-        // Swiped Left -> Animate off-screen to the left then go back
         setIsAnimatingOut(true);
         triggerHaptic('light');
         await animate(x, -600, {
@@ -71,12 +69,10 @@ export function CardStack({
         setIsAnimatingOut(false);
         onPrev();
       } else {
-        // Spring back if at first card
         triggerHaptic('light');
         animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
       }
     } else {
-      // Released without passing threshold -> snap back to center
       animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
     }
   };
@@ -123,7 +119,11 @@ export function CardStack({
       {thirdCard && (
         <div
           aria-hidden="true"
-          className="absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] bg-white border border-neutral-200/60 shadow-xs pointer-events-none opacity-30"
+          className={`absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] border shadow-xs pointer-events-none opacity-30 ${
+            thirdCard.isCover
+              ? 'bg-[#C10016] border-[#C10016]'
+              : 'bg-white border-neutral-200/60'
+          }`}
           style={{
             transform: 'translateY(14px) scale(0.91)',
             zIndex: 1,
@@ -131,7 +131,7 @@ export function CardStack({
         />
       )}
 
-      {/* 2nd Card (Directly underneath with separate key and actual next question) */}
+      {/* 2nd Card (Directly underneath) */}
       {nextCard && (
         <motion.div
           key={`next-${nextCard.id}`}
@@ -142,22 +142,47 @@ export function CardStack({
             opacity: nextOpacity,
             zIndex: 2,
           }}
-          className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-md border border-neutral-200/80 pointer-events-none will-change-transform"
+          className={`absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center shadow-md pointer-events-none will-change-transform ${
+            nextCard.isCover
+              ? 'bg-[#C10016] text-white border border-[#C10016]'
+              : 'bg-white text-[#C10016] border border-neutral-200/80'
+          }`}
         >
           {/* Scotch Tape */}
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/70 backdrop-blur-[2px] border border-black/5 rounded-sm shadow-xs -rotate-1 pointer-events-none" />
+          <div
+            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[2px] rounded-sm shadow-xs -rotate-1 pointer-events-none ${
+              nextCard.isCover
+                ? 'bg-white/30 border border-white/20'
+                : 'bg-white/70 border border-black/5'
+            }`}
+          />
 
           <div />
 
-          {/* Next Card Question */}
-          <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
-            <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+          {/* Next Card Question / Cover Content */}
+          <div className="my-auto px-2 sm:px-6 flex flex-col items-center justify-center">
+            <p
+              className={`font-bold tracking-tight uppercase leading-snug text-balance ${
+                nextCard.isCover
+                  ? 'text-white text-lg sm:text-2xl'
+                  : 'text-[#C10016] text-base sm:text-lg md:text-xl'
+              }`}
+            >
               {nextCard.text}
             </p>
+            {nextCard.subtext && (
+              <p className="text-xs sm:text-sm font-medium mt-3 text-white/90 whitespace-pre-line text-balance leading-relaxed">
+                {nextCard.subtext}
+              </p>
+            )}
           </div>
 
           {/* Card Footer */}
-          <div className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016] whitespace-pre-line leading-tight">
+          <div
+            className={`text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
+              nextCard.isCover ? 'text-white/80' : 'text-[#C10016]'
+            }`}
+          >
             {nextCard.edition || editionText}
           </div>
         </motion.div>
@@ -176,22 +201,47 @@ export function CardStack({
             rotate,
             zIndex: 10,
           }}
-          className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-lg border border-neutral-200/80 will-change-transform"
+          className={`relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center shadow-lg will-change-transform ${
+            currentCard.isCover
+              ? 'bg-[#C10016] text-white border border-[#C10016]'
+              : 'bg-white text-[#C10016] border border-neutral-200/80'
+          }`}
         >
           {/* Scotch Tape */}
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/70 backdrop-blur-[2px] border border-black/5 rounded-sm shadow-xs -rotate-1 pointer-events-none" />
+          <div
+            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[2px] rounded-sm shadow-xs -rotate-1 pointer-events-none ${
+              currentCard.isCover
+                ? 'bg-white/30 border border-white/20'
+                : 'bg-white/70 border border-black/5'
+            }`}
+          />
 
           <div />
 
-          {/* Question centered */}
-          <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
-            <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+          {/* Question / Cover Content */}
+          <div className="my-auto px-2 sm:px-6 flex flex-col items-center justify-center">
+            <p
+              className={`font-bold tracking-tight uppercase leading-snug text-balance ${
+                currentCard.isCover
+                  ? 'text-white text-lg sm:text-2xl'
+                  : 'text-[#C10016] text-base sm:text-lg md:text-xl'
+              }`}
+            >
               {currentCard.text}
             </p>
+            {currentCard.subtext && (
+              <p className="text-xs sm:text-sm font-medium mt-3 text-white/90 whitespace-pre-line text-balance leading-relaxed">
+                {currentCard.subtext}
+              </p>
+            )}
           </div>
 
           {/* Card Footer */}
-          <div className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016] whitespace-pre-line leading-tight">
+          <div
+            className={`text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
+              currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
+            }`}
+          >
             {currentCard.edition || editionText}
           </div>
         </motion.div>

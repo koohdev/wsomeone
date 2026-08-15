@@ -1,22 +1,18 @@
-export interface Card {
-  id: string;
-  text: string;
-  edition?: string;
-}
-
-export interface Deck {
-  id: string;
-  title: string;
-  editionText: string;
-  cards: Card[];
-}
+import { Deck } from '@/types';
 
 export const DECKS: Deck[] = [
   {
     id: 'level-1-perception',
     title: 'LEVEL 1: PERCEPTION',
+    description: 'DO YOU KNOW HOW OTHERS SEE YOU?',
     editionText: 'WSOMEONE',
     cards: [
+      {
+        id: 'p-cover',
+        text: 'LEVEL 1: PERCEPTION',
+        subtext: 'DO YOU KNOW HOW OTHERS SEE YOU?\n\nREADY TO START? SWIPE RIGHT →',
+        isCover: true,
+      },
       { id: 'p-1', text: "WHAT'S THE FIRST THING YOU NOTICED ABOUT ME?" },
       { id: 'p-2', text: 'ON A SCALE OF 1-10, HOW APPROACHABLE DO I LOOK?' },
       { id: 'p-3', text: 'WHAT ASSUMPTION DID YOU SECRETLY MAKE ABOUT ME?' },
@@ -40,8 +36,15 @@ export const DECKS: Deck[] = [
   {
     id: 'level-2-connection',
     title: 'LEVEL 2: CONNECTION',
+    description: 'WHO ARE YOU, REALLY?',
     editionText: 'WSOMEONE',
     cards: [
+      {
+        id: 'c-cover',
+        text: 'LEVEL 2: CONNECTION',
+        subtext: 'WHO ARE YOU, REALLY?\n\nREADY TO START? SWIPE RIGHT →',
+        isCover: true,
+      },
       { id: 'c-1', text: "WHAT IS SOMETHING YOU WOULDN'T WANT TO CHANGE ABOUT YOURSELF?" },
       { id: 'c-2', text: 'WHAT WAS MY LAST BREAKUP LIKE FOR YOU?' },
       { id: 'c-3', text: "FINISH THE SENTENCE: YOU'RE THE ONLY PERSON I CAN _____ WITH." },
@@ -63,8 +66,15 @@ export const DECKS: Deck[] = [
   {
     id: 'level-3-reflection',
     title: 'LEVEL 3: REFLECTION',
+    description: 'WHAT HAVE YOU LEARNED?',
     editionText: 'WSOMEONE',
     cards: [
+      {
+        id: 'r-cover',
+        text: 'LEVEL 3: REFLECTION',
+        subtext: 'WHAT HAVE YOU LEARNED?\n\nREADY TO START? SWIPE RIGHT →',
+        isCover: true,
+      },
       { id: 'r-1', text: 'WHAT HAS THIS CONVERSATION TAUGHT YOU ABOUT YOURSELF?' },
       { id: 'r-2', text: 'IF YOU COULD RELIVE AN ICONIC DAY IN OUR FRIENDSHIP, WHAT WOULD IT BE?' },
       { id: 'r-3', text: 'WHAT DO YOU THINK MY GREATEST STRENGTH IS?' },
@@ -82,8 +92,15 @@ export const DECKS: Deck[] = [
   {
     id: 'dating-edition',
     title: 'DATING SURVIVAL KIT',
+    description: 'FOR LOVERS, CRUSHES & COMPLICATIONS',
     editionText: 'WSOMEONE\nDATING SURVIVAL KIT',
     cards: [
+      {
+        id: 'd-cover',
+        text: 'DATING SURVIVAL KIT',
+        subtext: 'FOR LOVERS, CRUSHES & COMPLICATIONS\n\nREADY TO START? SWIPE RIGHT →',
+        isCover: true,
+      },
       { id: 'd-1', text: "WHAT'S A RED FLAG YOU IGNORE WHEN YOU LIKE SOMEONE?" },
       { id: 'd-2', text: 'WHAT WAS THE EXACT MOMENT YOU KNEW YOU LIKED ME?' },
       { id: 'd-3', text: 'WHAT DO YOU CRAVE IN A RELATIONSHIP BUT NEVER ASK FOR?' },
@@ -101,8 +118,15 @@ export const DECKS: Deck[] = [
   {
     id: 'friendship-edition',
     title: 'FRIENDSHIP EDITION',
+    description: 'FOR THE ONES WHO KNOW ALL YOUR SECRETS',
     editionText: 'WSOMEONE\nFRIENDSHIP EDITION',
     cards: [
+      {
+        id: 'f-cover',
+        text: 'FRIENDSHIP EDITION',
+        subtext: 'FOR THE ONES WHO KNOW ALL YOUR SECRETS\n\nREADY TO START? SWIPE RIGHT →',
+        isCover: true,
+      },
       { id: 'f-1', text: 'IF YOU COULD RELIVE AN ICONIC DAY IN OUR FRIENDSHIP, WHAT WOULD IT BE?' },
       { id: 'f-2', text: 'WHEN DID YOU REALIZE WE WERE GOING TO BE REAL FRIENDS?' },
       { id: 'f-3', text: 'WHAT WAS MY LAST BREAKUP LIKE FOR YOU?' },
@@ -118,8 +142,15 @@ export const DECKS: Deck[] = [
   {
     id: 'late-night',
     title: 'LATE NIGHT',
+    description: 'FOR 3 AM THOUGHTS & HONEST TALKS',
     editionText: 'WSOMEONE\nLATE NIGHT',
     cards: [
+      {
+        id: 'ln-cover',
+        text: 'LATE NIGHT',
+        subtext: 'FOR 3 AM THOUGHTS & HONEST TALKS\n\nREADY TO START? SWIPE RIGHT →',
+        isCover: true,
+      },
       { id: 'ln-1', text: 'WHAT THOUGHT KEEPS YOU AWAKE AT 3 AM?' },
       { id: 'ln-2', text: 'WHAT HAVE YOU NEVER ADMITTED OUT LOUD UNTIL TONIGHT?' },
       { id: 'ln-3', text: 'WHO FROM YOUR PAST DO YOU STILL WISH YOU COULD APOLOGIZE TO?' },
