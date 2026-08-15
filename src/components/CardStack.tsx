@@ -52,7 +52,7 @@ export function CardStack({
 
   // Motion values for the top active card
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-600, 0, 600], [-18, 0, 18]);
+  const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
 
   // Dynamic transforms for Layer 2 (middle card) as top card is dragged
   const nextScale = useTransform(x, [-250, 0, 250], [1, 0.96, 1]);
@@ -62,9 +62,10 @@ export function CardStack({
 
   const getExitDistance = () => {
     if (typeof window !== 'undefined') {
-      return Math.max(window.innerWidth * 1.15, 1400);
+      // Exactly enough distance from center so the card's trailing edge gently clears the screen
+      return window.innerWidth / 2 + 320;
     }
-    return 1400;
+    return 800;
   };
 
   const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -74,20 +75,20 @@ export function CardStack({
     const velocityThreshold = 250;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      // Forward / Swipe Right -> Animate all the way off-screen with graceful momentum
+      // Forward / Swipe Right -> Relaxed, gentle, cinematic glide all the way off the right edge
       setIsAnimatingOut(true);
       triggerHaptic('snap');
       const exitDistance = getExitDistance();
       await animate(x, exitDistance, {
-        duration: 0.58,
-        ease: [0.22, 1, 0.36, 1],
+        duration: 0.82,
+        ease: [0.16, 1, 0.3, 1],
       });
       x.set(0);
       setIsAnimatingOut(false);
       onNext();
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
-        // Reverse / Swipe Left -> Previous card smoothly glides back IN from the right edge
+        // Reverse / Swipe Left -> Previous card smoothly and gently glides back IN from the right edge
         setIsAnimatingOut(true);
         triggerHaptic('light');
         onPrev();
@@ -96,16 +97,16 @@ export function CardStack({
         setIsAnimatingOut(false);
         animate(x, 0, {
           type: 'spring',
-          damping: 26,
-          stiffness: 180,
-          mass: 0.9,
+          damping: 28,
+          stiffness: 110,
+          mass: 1.1,
         });
       } else {
         triggerHaptic('light');
-        animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
+        animate(x, 0, { type: 'spring', damping: 24, stiffness: 220 });
       }
     } else {
-      animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
+      animate(x, 0, { type: 'spring', damping: 24, stiffness: 240 });
     }
   };
 
@@ -548,17 +549,17 @@ export function CardStack({
                 }`}
                 style={{
                   textShadow: currentCard.isCover
-                ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
-                : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
-            }}
-          >
-            {currentCard.isCover
-              ? (currentCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
-              : (currentCard.edition || editionText)}
-          </div>
-        </motion.div>
-      )}
-    </>
+                    ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
+                    : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
+                }}
+              >
+                {currentCard.isCover
+                  ? (currentCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
+                  : (currentCard.edition || editionText)}
+              </div>
+            </motion.div>
+          )}
+        </>
       )}
     </div>
   );
