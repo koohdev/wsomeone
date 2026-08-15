@@ -80,10 +80,11 @@ export function CardStack({
   const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isShuffling) return;
 
-    const threshold = 65;
-    const velocityThreshold = 220;
+    const rightThreshold = 65;
+    const rightVelocityThreshold = 220;
+    const leftThreshold = typeof window !== 'undefined' ? window.innerWidth * 0.3 : 120;
 
-    if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
+    if (info.offset.x > rightThreshold || info.velocity.x > rightVelocityThreshold) {
       // Forward / Swipe Right -> Promote next card IMMEDIATELY with ZERO delay
       triggerHaptic('snap');
       const dismissed = currentCard;
@@ -97,9 +98,9 @@ export function CardStack({
         const exitId = `${dismissed.id}-${Date.now()}`;
         setExitingCards((prev) => [...prev, { id: exitId, card: dismissed, startX: currentX }]);
       }
-    } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
+    } else if (info.offset.x < -leftThreshold) {
+      // Reverse / Swipe Left -> Only register if swiped 30% of viewport width (30vw) to the left
       if (currentIndex > 0) {
-        // Reverse / Swipe Left -> Restore prev immediately and spring in
         triggerHaptic('light');
         onPrev();
         x.set(380);
