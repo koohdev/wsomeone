@@ -7,7 +7,7 @@ import { useWakeLock } from '@/hooks/useWakeLock';
 import { useHaptics } from '@/hooks/useHaptics';
 import { BottomSheet } from './motion/bottom-sheet';
 import { DECKS } from '@/data/decks';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, ArrowLeft } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
 import { ProgressCircle } from './ui/ProgressCircle';
 
@@ -138,11 +138,11 @@ export function CardView({
         </button>
       </footer>
 
-      {/* @beui/bottom-sheet for Selecting Topics and Reshuffling */}
+      {/* @beui/bottom-sheet for Selecting Topics, Reshuffling, and Returning to Landing Page */}
       <BottomSheet
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
-        snapPoints={[0.62, 0.92]}
+        snapPoints={[0.68, 0.94]}
         title="TOPICS"
       >
         <div className="flex flex-col gap-2.5 mt-2">
@@ -198,17 +198,33 @@ export function CardView({
             );
           })}
 
-          {/* Reshuffle Button */}
-          <button
-            onClick={() => {
-              handleReshuffle();
-              setIsSheetOpen(false);
-            }}
-            className="flex items-center justify-center gap-2 w-full mt-2 p-3.5 rounded-2xl border border-dashed border-[#C10016]/40 text-[#C10016] font-mono text-xs font-semibold uppercase hover:bg-[#C10016]/5 active:scale-[0.98] cursor-pointer transition-all"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Reshuffle Current Deck
-          </button>
+          {/* Action Buttons */}
+          <div className="flex flex-col gap-2 mt-2 pt-2 border-t border-black/5">
+            {/* Reshuffle Button */}
+            <button
+              onClick={() => {
+                handleReshuffle();
+                setIsSheetOpen(false);
+              }}
+              className="flex items-center justify-center gap-2 w-full p-3.5 rounded-2xl border border-dashed border-[#C10016]/40 text-[#C10016] font-mono text-xs font-semibold uppercase hover:bg-[#C10016]/5 active:scale-[0.98] cursor-pointer transition-all"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Reshuffle Current Deck
+            </button>
+
+            {/* Back to Landing Page Button */}
+            <button
+              onClick={() => {
+                triggerHaptic('light');
+                setIsSheetOpen(false);
+                onExit();
+              }}
+              className="flex items-center justify-center gap-2 w-full p-3.5 rounded-2xl bg-[#C10016]/10 text-[#C10016] font-mono text-xs font-semibold uppercase hover:bg-[#C10016]/15 active:scale-[0.98] cursor-pointer transition-all"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to Landing Page
+            </button>
+          </div>
         </div>
       </BottomSheet>
     </div>
