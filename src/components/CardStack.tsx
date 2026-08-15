@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, useMotionValue, useTransform, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate, PanInfo } from 'framer-motion';
 import { Card } from '@/types';
 
 interface CardStackProps {
@@ -10,7 +10,7 @@ interface CardStackProps {
   onNext: () => void;
   onPrev: () => void;
   onReshuffle: () => void;
-  onExit: () => void;
+  onExit?: () => void;
   editionText?: string;
   triggerHaptic: (pattern?: 'light' | 'snap') => void;
 }
@@ -21,41 +21,63 @@ export function CardStack({
   onNext,
   onPrev,
   onReshuffle,
+  onExit,
   editionText = 'WSOMEONE',
   triggerHaptic,
 }: CardStackProps) {
-  const [exitDirection, setExitDirection] = useState<'right' | 'left' | null>(null);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+
   const isEnd = currentIndex >= cards.length;
   const currentCard = !isEnd ? cards[currentIndex] : null;
   const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
   const thirdCard = currentIndex + 2 < cards.length ? cards[currentIndex + 2] : null;
 
-  // Motion values for top card
+  // Motion values for the top active card
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 0, 300], [-12, 0, 12]);
-  const opacity = useTransform(x, [-250, 0, 250], [0.6, 1, 0.6]);
+  const rotate = useTransform(x, [-300, 0, 300], [-14, 0, 14]);
 
-  // Motion transforms for the underlying card (scales up into focus as top card is dragged)
-  const nextCardScale = useTransform(x, [-200, 0, 200], [1, 0.95, 1]);
-  const nextCardY = useTransform(x, [-200, 0, 200], [0, 8, 0]);
-  const nextCardOpacity = useTransform(x, [-200, 0, 200], [1, 0.85, 1]);
+  // Dynamic transforms for the 2nd card underneath while top card is dragged
+  const nextScale = useTransform(x, [-250, 0, 250], [1, 0.95, 1]);
+  const nextY = useTransform(x, [-250, 0, 250], [0, 8, 0]);
+  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.85, 1]);
 
-  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 75;
+  const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isAnimatingOut) return;
+
+    const threshold = 70;
     const velocityThreshold = 250;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      setExitDirection('right');
+      // Swiped Right -> Animate off-screen to the right then advance
+      setIsAnimatingOut(true);
       triggerHaptic('snap');
+      await animate(x, 600, {
+        duration: 0.18,
+        ease: 'easeOut',
+      });
+      x.set(0);
+      setIsAnimatingOut(false);
       onNext();
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
-        setExitDirection('left');
+        // Swiped Left -> Animate off-screen to the left then go back
+        setIsAnimatingOut(true);
         triggerHaptic('light');
+        await animate(x, -600, {
+          duration: 0.18,
+          ease: 'easeOut',
+        });
+        x.set(0);
+        setIsAnimatingOut(false);
         onPrev();
       } else {
+        // Spring back if at first card
         triggerHaptic('light');
+        animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
       }
+    } else {
+      // Released without passing threshold -> snap back to center
+      animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
     }
   };
 
@@ -68,7 +90,8 @@ export function CardStack({
           transition={{ type: 'spring', damping: 20, stiffness: 250 }}
           onClick={() => {
             triggerHaptic('snap');
-            onReshuffle();
+            if (onExit) onExit();
+            else onReshuffle();
           }}
           className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-lg border border-neutral-200/80 select-none active:scale-[0.99] transition-transform"
         >
@@ -82,7 +105,7 @@ export function CardStack({
               YOU’VE REACHED THE END.
             </h2>
             <p className="text-[#C10016]/70 text-xs sm:text-sm font-medium mt-2">
-              Tap anywhere to reshuffle or exit to topics.
+              Tap anywhere to exit to topics or reshuffle.
             </p>
           </div>
 
@@ -96,11 +119,11 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4 select-none touch-none">
-      {/* 3rd Card in Stack (deep subtle shadow) */}
+      {/* 3rd Card in Stack */}
       {thirdCard && (
         <div
           aria-hidden="true"
-          className="absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] bg-white border border-neutral-200/60 shadow-xs pointer-events-none opacity-40"
+          className="absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] bg-white border border-neutral-200/60 shadow-xs pointer-events-none opacity-30"
           style={{
             transform: 'translateY(14px) scale(0.91)',
             zIndex: 1,
@@ -108,14 +131,15 @@ export function CardStack({
         />
       )}
 
-      {/* 2nd Card (The ACTUAL NEXT CARD rendered underneath!) */}
+      {/* 2nd Card (Directly underneath with separate key and actual next question) */}
       {nextCard && (
         <motion.div
+          key={`next-${nextCard.id}`}
           aria-hidden="true"
           style={{
-            scale: nextCardScale,
-            y: nextCardY,
-            opacity: nextCardOpacity,
+            scale: nextScale,
+            y: nextY,
+            opacity: nextOpacity,
             zIndex: 2,
           }}
           className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-md border border-neutral-200/80 pointer-events-none will-change-transform"
@@ -125,69 +149,53 @@ export function CardStack({
 
           <div />
 
-          {/* Next Card Question Preview */}
+          {/* Next Card Question */}
           <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
             <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
               {nextCard.text}
             </p>
           </div>
 
-          {/* Card Footer Branding */}
+          {/* Card Footer */}
           <div className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016] whitespace-pre-line leading-tight">
             {nextCard.edition || editionText}
           </div>
         </motion.div>
       )}
 
-      {/* Active Top Card with Free Drag Physics */}
-      <AnimatePresence mode="popLayout" custom={exitDirection}>
-        {currentCard && (
-          <motion.div
-            key={currentCard.id}
-            drag="x"
-            dragConstraints={{ left: -600, right: 600 }}
-            dragElastic={0.8}
-            onDragEnd={handleDragEnd}
-            style={{
-              x,
-              rotate,
-              opacity,
-              zIndex: 10,
-            }}
-            initial={{ scale: 0.95, opacity: 0, y: 8 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{
-              x: exitDirection === 'left' ? -500 : 500,
-              rotate: exitDirection === 'left' ? -20 : 20,
-              opacity: 0,
-              transition: { duration: 0.2, ease: [0.32, 0.72, 0, 1] },
-            }}
-            transition={{
-              type: 'spring',
-              damping: 22,
-              stiffness: 300,
-            }}
-            className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-lg border border-neutral-200/80 will-change-transform"
-          >
-            {/* Scotch Tape */}
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/70 backdrop-blur-[2px] border border-black/5 rounded-sm shadow-xs -rotate-1 pointer-events-none" />
+      {/* Active Top Draggable Card */}
+      {currentCard && (
+        <motion.div
+          key={`current-${currentCard.id}`}
+          drag={isAnimatingOut ? false : 'x'}
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.85}
+          onDragEnd={handleDragEnd}
+          style={{
+            x,
+            rotate,
+            zIndex: 10,
+          }}
+          className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-lg border border-neutral-200/80 will-change-transform"
+        >
+          {/* Scotch Tape */}
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/70 backdrop-blur-[2px] border border-black/5 rounded-sm shadow-xs -rotate-1 pointer-events-none" />
 
-            <div />
+          <div />
 
-            {/* Question centered */}
-            <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
-              <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
-                {currentCard.text}
-              </p>
-            </div>
+          {/* Question centered */}
+          <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
+            <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+              {currentCard.text}
+            </p>
+          </div>
 
-            {/* Card Footer Branding */}
-            <div className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016] whitespace-pre-line leading-tight">
-              {currentCard.edition || editionText}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Card Footer */}
+          <div className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016] whitespace-pre-line leading-tight">
+            {currentCard.edition || editionText}
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }
