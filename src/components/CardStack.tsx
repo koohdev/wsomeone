@@ -17,6 +17,12 @@ interface CardStackProps {
   triggerHaptic: (pattern?: 'light' | 'snap' | 'shuffle') => void;
 }
 
+interface ExitingCard {
+  id: string;
+  card: Card;
+  startX: number;
+}
+
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
 const PAPER_TEXTURE_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperPulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperPulp)'/%3E%3Ccircle cx='45' cy='78' r='0.75' fill='%23332211' opacity='0.25'/%3E%3Ccircle cx='180' cy='220' r='0.6' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='240' cy='60' r='0.9' fill='%23443322' opacity='0.2'/%3E%3Ccircle cx='95' cy='190' r='0.7' fill='%23332211' opacity='0.22'/%3E%3Ccircle cx='140' cy='120' r='0.5' fill='%23111111' opacity='0.18'/%3E%3Ccircle cx='270' cy='260' r='0.8' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='30' cy='250' r='0.65' fill='%23442211' opacity='0.22'/%3E%3C/svg%3E")`;
 
@@ -32,7 +38,7 @@ export function CardStack({
   editionText = 'WSOMEONE',
   triggerHaptic,
 }: CardStackProps) {
-  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
+  const [exitingCards, setExitingCards] = useState<ExitingCard[]>([]);
 
   const isEnd = currentIndex >= cards.length;
   const currentCard = !isEnd ? cards[currentIndex] : null;
@@ -62,44 +68,45 @@ export function CardStack({
 
   const getExitDistance = () => {
     if (typeof window !== 'undefined') {
-      // Exactly enough distance from center so the card's trailing edge gently clears the screen
       return window.innerWidth / 2 + 320;
     }
     return 800;
   };
 
-  const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    if (isAnimatingOut || isShuffling) return;
+  const removeExitingCard = (id: string) => {
+    setExitingCards((prev) => prev.filter((c) => c.id !== id));
+  };
 
-    const threshold = 70;
-    const velocityThreshold = 250;
+  const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (isShuffling) return;
+
+    const threshold = 65;
+    const velocityThreshold = 220;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      // Forward / Swipe Right -> Relaxed, gentle, cinematic glide all the way off the right edge
-      setIsAnimatingOut(true);
+      // Forward / Swipe Right -> Promote next card IMMEDIATELY with ZERO delay
       triggerHaptic('snap');
-      const exitDistance = getExitDistance();
-      await animate(x, exitDistance, {
-        duration: 0.82,
-        ease: [0.16, 1, 0.3, 1],
-      });
-      x.set(0);
-      setIsAnimatingOut(false);
+      const dismissed = currentCard;
+      const currentX = x.get();
+
+      // Advance immediately so the next card is instantly interactive!
       onNext();
+      x.set(0);
+
+      if (dismissed) {
+        const exitId = `${dismissed.id}-${Date.now()}`;
+        setExitingCards((prev) => [...prev, { id: exitId, card: dismissed, startX: currentX }]);
+      }
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
-        // Reverse / Swipe Left -> Previous card smoothly and gently glides back IN from the right edge
-        setIsAnimatingOut(true);
+        // Reverse / Swipe Left -> Restore prev immediately and spring in
         triggerHaptic('light');
         onPrev();
-        const exitDistance = getExitDistance();
-        x.set(exitDistance);
-        setIsAnimatingOut(false);
+        x.set(380);
         animate(x, 0, {
           type: 'spring',
-          damping: 28,
-          stiffness: 110,
-          mass: 1.1,
+          damping: 24,
+          stiffness: 180,
         });
       } else {
         triggerHaptic('light');
@@ -140,7 +147,7 @@ export function CardStack({
 
   if (isEnd && !isShuffling) {
     return (
-      <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[320px] landscape:sm:max-w-[350px] items-center justify-center px-4">
+      <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4">
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -203,7 +210,7 @@ export function CardStack({
   }
 
   return (
-    <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[320px] landscape:sm:max-w-[350px] items-center justify-center px-4 select-none touch-none">
+    <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4 select-none touch-none">
       {/* SHUFFLE CHOREOGRAPHY: 1.6s Full Riffle & Interweave Sequence with Real Question Text */}
       {isShuffling ? (
         <div className="relative flex aspect-[1.38/1] w-full items-center justify-center pointer-events-none">
@@ -464,11 +471,11 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* Layer 1: Active Top Draggable Card */}
+          {/* Layer 1: Active Top Draggable Card (Immediately interactive on swipe) */}
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
-              drag={isAnimatingOut ? false : 'x'}
+              drag={isShuffling ? false : 'x'}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.85}
               onDragEnd={handleDragEnd}
@@ -542,7 +549,7 @@ export function CardStack({
                 </div>
               )}
 
-              {/* Card Footer: wsomeone without wide spaces */}
+              {/* Card Footer */}
               <div
                 className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
                   currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
@@ -559,6 +566,70 @@ export function CardStack({
               </div>
             </motion.div>
           )}
+
+          {/* Independently Exiting Discarded Cards (allows zero-lag instant continuous swiping) */}
+          {exitingCards.map(({ id, card, startX }) => (
+            <motion.div
+              key={id}
+              initial={{ x: startX, rotate: (startX / 600) * 14, opacity: 1 }}
+              animate={{ x: getExitDistance(), rotate: 16, opacity: 0.85 }}
+              transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+              onAnimationComplete={() => removeExitingCard(id)}
+              style={{
+                ...getCardStyle(card.isCover),
+                zIndex: 25,
+                pointerEvents: 'none',
+              }}
+              className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden shadow-xl"
+            >
+              <div
+                aria-hidden="true"
+                className={`absolute inset-0 pointer-events-none rounded-[32px] ${
+                  card.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
+                }`}
+                style={{
+                  backgroundImage: PAPER_TEXTURE_DATA_URI,
+                  backgroundSize: '220px 220px',
+                }}
+              />
+              <div
+                aria-hidden="true"
+                className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
+                  card.isCover
+                    ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
+                    : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
+                }`}
+              />
+              <div
+                className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
+                  card.isCover
+                    ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
+                    : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
+                }`}
+              />
+              <div />
+              {card.isCover ? (
+                <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
+                  <h2 className="text-xl sm:text-2xl landscape:text-base font-black uppercase tracking-tight text-white leading-tight">
+                    {card.coverTitle || card.text}
+                  </h2>
+                </div>
+              ) : (
+                <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
+                  <p className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm font-bold tracking-tight uppercase leading-snug text-balance">
+                    {card.text}
+                  </p>
+                </div>
+              )}
+              <div
+                className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+                  card.isCover ? 'text-white/80' : 'text-[#C10016]'
+                }`}
+              >
+                {card.isCover ? (card.coverPrompt || 'READY TO START? SWIPE RIGHT →') : (card.edition || editionText)}
+              </div>
+            </motion.div>
+          ))}
         </>
       )}
     </div>
