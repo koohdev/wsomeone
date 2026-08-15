@@ -2,28 +2,28 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, Deck } from '@/types';
-import { DeckProgressState } from '@/lib/storage';
 import { CardStack } from './CardStack';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { useHaptics } from '@/hooks/useHaptics';
 import { BottomSheet } from './motion/bottom-sheet';
 import { DECKS } from '@/data/decks';
-import { RotateCcw, ArrowLeft, RotateCw } from 'lucide-react';
+import { RotateCcw, RotateCw, ArrowLeft } from 'lucide-react';
 import NumberFlow from '@number-flow/react';
 import { ProgressCircle } from './ui/ProgressCircle';
+
+interface SavedDeckState {
+  currentIndex: number;
+  totalCards: number;
+  cardIds?: string[];
+}
 
 interface CardViewProps {
   deck: Deck;
   onSelectDeck: (deck: Deck) => void;
   onExit: () => void;
   progressMap?: Record<string, number>;
-  savedState?: DeckProgressState;
-  onUpdateProgress?: (
-    deckId: string,
-    currentIndex: number,
-    totalCards: number,
-    cardIds?: string[]
-  ) => void;
+  savedState?: SavedDeckState;
+  onUpdateProgress?: (deckId: string, currentIndex: number, totalCards: number, cardIds?: string[]) => void;
   onResetProgress?: (deckId: string) => void;
 }
 
@@ -75,7 +75,7 @@ export function CardView({
 
   const prevDeckIdRef = useRef(deck.id);
 
-  // Sync cards and resume position when deck changes or on initial mount
+  // Sync cards and restored index when deck changes
   useEffect(() => {
     if (prevDeckIdRef.current !== deck.id) {
       prevDeckIdRef.current = deck.id;
@@ -107,12 +107,13 @@ export function CardView({
     const newCards = [coverCard, ...shuffledQuestions];
     setCards(newCards);
     setCurrentIndex(0);
+    // Play the book page shuffle sound effect
     triggerHaptic('shuffle');
   }, [deck.cards, triggerHaptic]);
 
   const handleRestartDeck = useCallback(() => {
     setCurrentIndex(0);
-    triggerHaptic('light');
+    triggerHaptic('shuffle');
     if (onResetProgress) {
       onResetProgress(deck.id);
     }
@@ -160,8 +161,8 @@ export function CardView({
   return (
     <div className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
       {/* Top Bar: Centered Counter with NumberFlow Animation */}
-      <header className="relative z-30 flex items-center justify-center px-6 pt-6 sm:px-10 sm:pt-8 w-full max-w-xl mx-auto">
-        <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
+      <header className="relative z-30 flex items-center justify-center px-6 pt-5 sm:pt-7 landscape:pt-2 landscape:pb-1 w-full max-w-xl mx-auto">
+        <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base landscape:text-xs font-semibold tracking-wider">
           <NumberFlow
             value={displayIndex}
             transformTiming={{ duration: 350, easing: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
@@ -173,7 +174,7 @@ export function CardView({
       </header>
 
       {/* Center Card Stage */}
-      <main className="relative flex flex-1 items-center justify-center py-6">
+      <main className="relative flex flex-1 items-center justify-center py-4 sm:py-6 landscape:py-1">
         <CardStack
           cards={cards}
           currentIndex={currentIndex}
@@ -187,8 +188,8 @@ export function CardView({
         />
       </main>
 
-      {/* Bottom Floating Menu Pill: Matching sketch layout "+ MENU" */}
-      <footer className="relative z-30 flex flex-col items-center justify-center pb-8 pt-2">
+      {/* 1. Portrait Floating Menu Pill (hidden in landscape) */}
+      <footer className="relative z-30 flex landscape:hidden flex-col items-center justify-center pb-8 pt-2">
         <button
           onClick={() => {
             triggerHaptic('light');
@@ -200,6 +201,21 @@ export function CardView({
           <span>MENU</span>
         </button>
       </footer>
+
+      {/* 2. Landscape Menu Button on Right Side (vertically stacked letters + M E N U) */}
+      <button
+        onClick={() => {
+          triggerHaptic('light');
+          setIsSheetOpen(true);
+        }}
+        className="hidden landscape:flex fixed right-4 sm:right-6 top-1/2 -translate-y-1/2 z-40 flex-col items-center justify-center gap-0.5 py-3 px-2 rounded-full border border-[#C10016] text-[#C10016] font-mono text-[11px] font-bold uppercase tracking-widest bg-[#EDEDEF]/85 backdrop-blur-xs hover:bg-[#C10016]/5 active:scale-95 transition-all cursor-pointer shadow-xs"
+      >
+        <span className="text-xs leading-none mb-0.5">+</span>
+        <span>M</span>
+        <span>E</span>
+        <span>N</span>
+        <span>U</span>
+      </button>
 
       {/* @beui/bottom-sheet for Selecting Topics, Reshuffling, and Returning to Landing Page */}
       <BottomSheet
@@ -277,7 +293,7 @@ export function CardView({
               </button>
             )}
 
-            {/* Reshuffle Button */}
+            {/* Reshuffle Button: Uses freesound bookpageshuffle sound */}
             <button
               onClick={() => {
                 handleReshuffle();

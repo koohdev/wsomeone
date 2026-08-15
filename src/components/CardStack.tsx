@@ -13,7 +13,7 @@ interface CardStackProps {
   onOpenMenu?: () => void;
   onExit?: () => void;
   editionText?: string;
-  triggerHaptic: (pattern?: 'light' | 'snap') => void;
+  triggerHaptic: (pattern?: 'light' | 'snap' | 'shuffle') => void;
 }
 
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
@@ -120,7 +120,7 @@ export function CardStack({
 
   if (isEnd) {
     return (
-      <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4">
+      <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[320px] landscape:sm:max-w-[350px] items-center justify-center px-4">
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -136,7 +136,7 @@ export function CardStack({
             }
           }}
           style={getCardStyle(false)}
-          className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border select-none active:scale-[0.99] transition-transform overflow-hidden"
+          className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 text-center border select-none active:scale-[0.99] transition-transform overflow-hidden"
         >
           {/* Paper Fiber Grain & Dust Fleck Layer */}
           <div
@@ -161,12 +161,12 @@ export function CardStack({
 
           <div className="relative z-10 px-4">
             <h2
-              className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug"
+              className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm font-bold tracking-tight uppercase leading-snug"
               style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
             >
               YOU’VE REACHED THE END.
             </h2>
-            <p className="text-[#C10016]/70 text-xs sm:text-sm font-medium mt-2">
+            <p className="text-[#C10016]/70 text-xs sm:text-sm landscape:text-[11px] font-medium mt-1">
               Tap anywhere to open topics menu or reshuffle.
             </p>
           </div>
@@ -183,7 +183,7 @@ export function CardStack({
   }
 
   return (
-    <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4 select-none touch-none">
+    <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[320px] landscape:sm:max-w-[350px] items-center justify-center px-4 select-none touch-none">
       {/* Layer 3: Bottom card consistently peeking to the LEFT */}
       {thirdCard && (
         <div
@@ -210,7 +210,7 @@ export function CardStack({
             rotate: nextRotate,
             zIndex: 2,
           }}
-          className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border pointer-events-none will-change-transform overflow-hidden"
+          className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none will-change-transform overflow-hidden"
         >
           {/* Paper Fiber Grain & Dust Fleck Layer */}
           <div
@@ -247,16 +247,16 @@ export function CardStack({
 
           {/* Next Card Content */}
           {nextCard.isCover ? (
-            <div className="relative z-10 my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+            <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
               <h2
-                className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight"
+                className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
                 style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
               >
                 {nextCard.coverTitle || nextCard.text}
               </h2>
               {nextCard.coverTagline && (
                 <p
-                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-tight text-white/85 max-w-xs leading-snug"
+                  className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
                   style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
                 >
                   {nextCard.coverTagline}
@@ -264,9 +264,9 @@ export function CardStack({
               )}
             </div>
           ) : (
-            <div className="relative z-10 my-auto px-2 sm:px-6 flex items-center justify-center">
+            <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
               <p
-                className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance"
+                className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance"
                 style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
               >
                 {nextCard.text}
@@ -276,7 +276,7 @@ export function CardStack({
 
           {/* Card Footer */}
           <div
-            className={`relative z-10 text-[11px] sm:text-xs font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+            className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
               nextCard.isCover ? 'text-white/80' : 'text-[#C10016]'
             }`}
             style={{
@@ -306,7 +306,7 @@ export function CardStack({
             rotate,
             zIndex: 10,
           }}
-          className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border will-change-transform overflow-hidden"
+          className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden"
         >
           {/* Paper Fiber Grain & Dust Fleck Layer */}
           <div
@@ -343,16 +343,16 @@ export function CardStack({
 
           {/* Question / Cover Content */}
           {currentCard.isCover ? (
-            <div className="relative z-10 my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+            <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
               <h2
-                className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight"
+                className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
                 style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
               >
                 {currentCard.coverTitle || currentCard.text}
               </h2>
               {currentCard.coverTagline && (
                 <p
-                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-tight text-white/85 max-w-xs leading-snug"
+                  className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
                   style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
                 >
                   {currentCard.coverTagline}
@@ -360,9 +360,9 @@ export function CardStack({
               )}
             </div>
           ) : (
-            <div className="relative z-10 my-auto px-2 sm:px-6 flex items-center justify-center">
+            <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
               <p
-                className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance"
+                className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance"
                 style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
               >
                 {currentCard.text}
@@ -372,7 +372,7 @@ export function CardStack({
 
           {/* Card Footer: wsomeone without wide spaces */}
           <div
-            className={`relative z-10 text-[11px] sm:text-xs font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+            className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
               currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
             }`}
             style={{
