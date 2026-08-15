@@ -15,6 +15,9 @@ interface CardStackProps {
   triggerHaptic: (pattern?: 'light' | 'snap') => void;
 }
 
+// 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
+const PAPER_TEXTURE_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperPulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperPulp)'/%3E%3Ccircle cx='45' cy='78' r='0.75' fill='%23332211' opacity='0.25'/%3E%3Ccircle cx='180' cy='220' r='0.6' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='240' cy='60' r='0.9' fill='%23443322' opacity='0.2'/%3E%3Ccircle cx='95' cy='190' r='0.7' fill='%23332211' opacity='0.22'/%3E%3Ccircle cx='140' cy='120' r='0.5' fill='%23111111' opacity='0.18'/%3E%3Ccircle cx='270' cy='260' r='0.8' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='30' cy='250' r='0.65' fill='%23442211' opacity='0.22'/%3E%3C/svg%3E")`;
+
 export function CardStack({
   cards,
   currentIndex,
@@ -77,6 +80,34 @@ export function CardStack({
     }
   };
 
+  // Realistic physical card styling for 350 GSM uncoated paper
+  const getCardStyle = (isCover?: boolean) => {
+    if (isCover) {
+      return {
+        backgroundColor: '#C10016',
+        borderColor: '#A00012',
+        boxShadow: `
+          inset 0 1.5px 1px rgba(255, 255, 255, 0.28),
+          inset 0 -2px 3px rgba(0, 0, 0, 0.25),
+          0 2px 4px rgba(0, 0, 0, 0.08),
+          0 14px 32px -4px rgba(193, 0, 22, 0.25),
+          0 1px 2px rgba(0, 0, 0, 0.12)
+        `,
+      };
+    }
+    return {
+      backgroundColor: '#FAF8F5',
+      borderColor: 'rgba(0, 0, 0, 0.08)',
+      boxShadow: `
+        inset 0 1.5px 1.5px rgba(255, 255, 255, 0.9),
+        inset 0 -1.5px 2px rgba(0, 0, 0, 0.04),
+        0 2px 4px rgba(0, 0, 0, 0.03),
+        0 14px 30px -6px rgba(0, 0, 0, 0.1),
+        0 1px 3px rgba(0, 0, 0, 0.04)
+      `,
+    };
+  };
+
   if (isEnd) {
     return (
       <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4">
@@ -89,15 +120,35 @@ export function CardStack({
             if (onExit) onExit();
             else onReshuffle();
           }}
-          className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] bg-white p-6 sm:p-8 text-center shadow-lg border border-neutral-200/80 select-none active:scale-[0.99] transition-transform"
+          style={getCardStyle(false)}
+          className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border select-none active:scale-[0.99] transition-transform overflow-hidden"
         >
-          {/* Scotch Tape */}
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-white/70 backdrop-blur-[2px] border border-black/5 rounded-sm shadow-xs -rotate-1 pointer-events-none" />
+          {/* Paper Fiber Grain & Dust Fleck Layer */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 pointer-events-none opacity-45 mix-blend-multiply rounded-[32px]"
+            style={{
+              backgroundImage: PAPER_TEXTURE_DATA_URI,
+              backgroundSize: '220px 220px',
+            }}
+          />
+
+          {/* Top Edge Wear & Bevel */}
+          <div
+            aria-hidden="true"
+            className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none"
+          />
+
+          {/* Frosted Matte Scotch Tape */}
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/70 via-white/55 to-white/40 backdrop-blur-[3px] border border-black/5 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
 
           <div />
 
-          <div className="px-4">
-            <h2 className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug">
+          <div className="relative z-10 px-4">
+            <h2
+              className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug"
+              style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+            >
               YOU’VE REACHED THE END.
             </h2>
             <p className="text-[#C10016]/70 text-xs sm:text-sm font-medium mt-2">
@@ -105,7 +156,10 @@ export function CardStack({
             </p>
           </div>
 
-          <div className="text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016]">
+          <div
+            className="relative z-10 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase text-[#C10016]"
+            style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+          >
             {editionText}
           </div>
         </motion.div>
@@ -115,45 +169,61 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4 select-none touch-none">
-      {/* 3rd Card in Stack */}
+      {/* 3rd Card in Stack (Stack depth) */}
       {thirdCard && (
         <div
           aria-hidden="true"
-          className={`absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] border shadow-xs pointer-events-none opacity-30 ${
-            thirdCard.isCover
-              ? 'bg-[#C10016] border-[#C10016]'
-              : 'bg-white border-neutral-200/60'
-          }`}
+          className="absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-35"
           style={{
+            ...getCardStyle(thirdCard.isCover),
             transform: 'translateY(14px) scale(0.91)',
             zIndex: 1,
           }}
         />
       )}
 
-      {/* 2nd Card (Directly underneath) */}
+      {/* 2nd Card (Directly underneath with physical cotton paper texture) */}
       {nextCard && (
         <motion.div
           key={`next-${nextCard.id}`}
           aria-hidden="true"
           style={{
+            ...getCardStyle(nextCard.isCover),
             scale: nextScale,
             y: nextY,
             opacity: nextOpacity,
             zIndex: 2,
           }}
-          className={`absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center shadow-md pointer-events-none will-change-transform ${
-            nextCard.isCover
-              ? 'bg-[#C10016] text-white border border-[#C10016]'
-              : 'bg-white text-[#C10016] border border-neutral-200/80'
-          }`}
+          className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border pointer-events-none will-change-transform overflow-hidden"
         >
-          {/* Scotch Tape */}
+          {/* Paper Fiber Grain & Dust Fleck Layer */}
           <div
-            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[2px] rounded-sm shadow-xs -rotate-1 pointer-events-none ${
+            aria-hidden="true"
+            className={`absolute inset-0 pointer-events-none rounded-[32px] ${
+              nextCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
+            }`}
+            style={{
+              backgroundImage: PAPER_TEXTURE_DATA_URI,
+              backgroundSize: '220px 220px',
+            }}
+          />
+
+          {/* Top Edge Wear Highlight */}
+          <div
+            aria-hidden="true"
+            className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
               nextCard.isCover
-                ? 'bg-white/30 border border-white/20'
-                : 'bg-white/70 border border-black/5'
+                ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
+                : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
+            }`}
+          />
+
+          {/* Frosted Scotch Tape */}
+          <div
+            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
+              nextCard.isCover
+                ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
+                : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
             }`}
           />
 
@@ -161,32 +231,46 @@ export function CardStack({
 
           {/* Next Card Content */}
           {nextCard.isCover ? (
-            <div className="my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
+            <div className="relative z-10 my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+              <h2
+                className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight"
+                style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
+              >
                 {nextCard.coverTitle || nextCard.text}
               </h2>
               {nextCard.coverTagline && (
-                <p className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
+                <p
+                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
+                  style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+                >
                   {nextCard.coverTagline}
                 </p>
               )}
             </div>
           ) : (
-            <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
-              <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+            <div className="relative z-10 my-auto px-2 sm:px-6 flex items-center justify-center">
+              <p
+                className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance"
+                style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+              >
                 {nextCard.text}
               </p>
             </div>
           )}
 
-          {/* Card Footer (Replacing WSOMEONE with SWIPE RIGHT text on cover cards) */}
+          {/* Card Footer */}
           <div
-            className={`text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
+            className={`relative z-10 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
               nextCard.isCover ? 'text-white/80' : 'text-[#C10016]'
             }`}
+            style={{
+              textShadow: nextCard.isCover
+                ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
+                : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
+            }}
           >
             {nextCard.isCover
-              ? (nextCard.coverPrompt || 'SWIPE RIGHT TO START →')
+              ? (nextCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
               : (nextCard.edition || editionText)}
           </div>
         </motion.div>
@@ -201,22 +285,41 @@ export function CardStack({
           dragElastic={0.85}
           onDragEnd={handleDragEnd}
           style={{
+            ...getCardStyle(currentCard.isCover),
             x,
             rotate,
             zIndex: 10,
           }}
-          className={`relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center shadow-lg will-change-transform ${
-            currentCard.isCover
-              ? 'bg-[#C10016] text-white border border-[#C10016]'
-              : 'bg-white text-[#C10016] border border-neutral-200/80'
-          }`}
+          className="relative flex aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border will-change-transform overflow-hidden"
         >
-          {/* Scotch Tape */}
+          {/* Paper Fiber Grain & Dust Fleck Layer */}
           <div
-            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[2px] rounded-sm shadow-xs -rotate-1 pointer-events-none ${
+            aria-hidden="true"
+            className={`absolute inset-0 pointer-events-none rounded-[32px] ${
+              currentCard.isCover ? 'opacity-30 mix-blend-overlay' : 'opacity-45 mix-blend-multiply'
+            }`}
+            style={{
+              backgroundImage: PAPER_TEXTURE_DATA_URI,
+              backgroundSize: '220px 220px',
+            }}
+          />
+
+          {/* Top Edge Wear & Subtle Highlight */}
+          <div
+            aria-hidden="true"
+            className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
               currentCard.isCover
-                ? 'bg-white/30 border border-white/20'
-                : 'bg-white/70 border border-black/5'
+                ? 'bg-gradient-to-r from-transparent via-white/35 to-transparent'
+                : 'bg-gradient-to-r from-transparent via-white/80 to-transparent'
+            }`}
+          />
+
+          {/* Frosted Scotch Tape */}
+          <div
+            className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
+              currentCard.isCover
+                ? 'bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20'
+                : 'bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5'
             }`}
           />
 
@@ -224,32 +327,46 @@ export function CardStack({
 
           {/* Question / Cover Content */}
           {currentCard.isCover ? (
-            <div className="my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
+            <div className="relative z-10 my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+              <h2
+                className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight"
+                style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
+              >
                 {currentCard.coverTitle || currentCard.text}
               </h2>
               {currentCard.coverTagline && (
-                <p className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
+                <p
+                  className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
+                  style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+                >
                   {currentCard.coverTagline}
                 </p>
               )}
             </div>
           ) : (
-            <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
-              <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+            <div className="relative z-10 my-auto px-2 sm:px-6 flex items-center justify-center">
+              <p
+                className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance"
+                style={{ textShadow: '0 0.4px 0.4px rgba(193, 0, 22, 0.15)' }}
+              >
                 {currentCard.text}
               </p>
             </div>
           )}
 
-          {/* Card Footer (Replacing WSOMEONE with SWIPE RIGHT text on cover cards) */}
+          {/* Card Footer */}
           <div
-            className={`text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
+            className={`relative z-10 text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
               currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
             }`}
+            style={{
+              textShadow: currentCard.isCover
+                ? '0 0.5px 1px rgba(0, 0, 0, 0.2)'
+                : '0 0.4px 0.4px rgba(193, 0, 22, 0.15)',
+            }}
           >
             {currentCard.isCover
-              ? (currentCard.coverPrompt || 'SWIPE RIGHT TO START →')
+              ? (currentCard.coverPrompt || 'READY TO START? SWIPE RIGHT →')
               : (currentCard.edition || editionText)}
           </div>
         </motion.div>
