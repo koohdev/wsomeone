@@ -2,7 +2,9 @@ export interface Card {
   id: string;
   text: string;
   isCover?: boolean;
-  subtext?: string;
+  coverTitle?: string;
+  coverTagline?: string;
+  coverPrompt?: string;
   edition?: string;
 }
 

@@ -159,23 +159,30 @@ export function CardStack({
 
           <div />
 
-          {/* Next Card Question / Cover Content */}
-          <div className="my-auto px-2 sm:px-6 flex flex-col items-center justify-center">
-            <p
-              className={`font-bold tracking-tight uppercase leading-snug text-balance ${
-                nextCard.isCover
-                  ? 'text-white text-lg sm:text-2xl'
-                  : 'text-[#C10016] text-base sm:text-lg md:text-xl'
-              }`}
-            >
-              {nextCard.text}
-            </p>
-            {nextCard.subtext && (
-              <p className="text-xs sm:text-sm font-medium mt-3 text-white/90 whitespace-pre-line text-balance leading-relaxed">
-                {nextCard.subtext}
+          {/* Next Card Content */}
+          {nextCard.isCover ? (
+            <div className="my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
+                {nextCard.coverTitle || nextCard.text}
+              </h2>
+              {nextCard.coverTagline && (
+                <p className="mt-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/80 max-w-xs leading-snug">
+                  {nextCard.coverTagline}
+                </p>
+              )}
+              <div className="mt-5">
+                <span className="inline-flex items-center px-3.5 py-1 rounded-full border border-white/30 bg-white/10 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.15em] font-semibold text-white/90 shadow-xs">
+                  {nextCard.coverPrompt || 'SWIPE RIGHT TO START →'}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
+              <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+                {nextCard.text}
               </p>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Card Footer */}
           <div
@@ -219,22 +226,29 @@ export function CardStack({
           <div />
 
           {/* Question / Cover Content */}
-          <div className="my-auto px-2 sm:px-6 flex flex-col items-center justify-center">
-            <p
-              className={`font-bold tracking-tight uppercase leading-snug text-balance ${
-                currentCard.isCover
-                  ? 'text-white text-lg sm:text-2xl'
-                  : 'text-[#C10016] text-base sm:text-lg md:text-xl'
-              }`}
-            >
-              {currentCard.text}
-            </p>
-            {currentCard.subtext && (
-              <p className="text-xs sm:text-sm font-medium mt-3 text-white/90 whitespace-pre-line text-balance leading-relaxed">
-                {currentCard.subtext}
+          {currentCard.isCover ? (
+            <div className="my-auto px-4 sm:px-8 flex flex-col items-center justify-center text-center">
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white leading-tight">
+                {currentCard.coverTitle || currentCard.text}
+              </h2>
+              {currentCard.coverTagline && (
+                <p className="mt-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/80 max-w-xs leading-snug">
+                  {currentCard.coverTagline}
+                </p>
+              )}
+              <div className="mt-5">
+                <span className="inline-flex items-center px-3.5 py-1 rounded-full border border-white/30 bg-white/10 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.15em] font-semibold text-white/90 shadow-xs">
+                  {currentCard.coverPrompt || 'SWIPE RIGHT TO START →'}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
+              <p className="text-[#C10016] text-base sm:text-lg md:text-xl font-bold tracking-tight uppercase leading-snug text-balance">
+                {currentCard.text}
               </p>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Card Footer */}
           <div
