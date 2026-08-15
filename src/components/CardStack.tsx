@@ -82,7 +82,7 @@ export function CardStack({
 
     const rightThreshold = 65;
     const rightVelocityThreshold = 220;
-    const leftThreshold = typeof window !== 'undefined' ? window.innerWidth * 0.3 : 120;
+    const leftThreshold = typeof window !== 'undefined' ? window.innerWidth * 0.2 : 120;
 
     if (info.offset.x > rightThreshold || info.velocity.x > rightVelocityThreshold) {
       // Forward / Swipe Right -> Promote next card IMMEDIATELY with ZERO delay
@@ -358,26 +358,36 @@ export function CardStack({
                 ease: 'easeInOut',
               }}
               style={{ ...getCardStyle(true), zIndex: 5 }}
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border p-6 landscape:p-4 flex flex-col items-center justify-between text-center overflow-hidden shadow-2xl"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center overflow-hidden shadow-2xl"
             >
               <div
                 className="absolute inset-0 opacity-30 mix-blend-overlay rounded-[32px]"
                 style={{ backgroundImage: PAPER_TEXTURE_DATA_URI, backgroundSize: '220px 220px' }}
               />
+              <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/40 via-white/25 to-white/15 backdrop-blur-[3px] border border-white/20 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
               <div />
-              <div className="relative z-10 flex flex-col items-center justify-center text-center">
-                <h2 className="text-xl sm:text-2xl landscape:text-lg font-black uppercase tracking-tight text-white leading-tight">
+              <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
+                <h2
+                  className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
+                  style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.25)' }}
+                >
                   {shuffleCover.coverTitle || shuffleCover.text}
                 </h2>
                 {shuffleCover.coverTagline && (
-                  <p className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
+                  <p
+                    className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug"
+                    style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+                  >
                     {shuffleCover.coverTagline}
                   </p>
                 )}
               </div>
-              <div className="relative z-10 text-[10px] sm:text-xs font-bold uppercase tracking-tight text-white/80">
-                {shuffleCover.coverPrompt || 'SHUFFLING DECK...'}
+              <div
+                className="relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight text-white/80"
+                style={{ textShadow: '0 0.5px 1px rgba(0, 0, 0, 0.2)' }}
+              >
+                {shuffleCover.coverPrompt || 'READY TO START? SWIPE RIGHT →'}
               </div>
             </motion.div>
           )}
