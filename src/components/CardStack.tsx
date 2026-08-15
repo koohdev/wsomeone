@@ -18,7 +18,7 @@ interface CardStackProps {
 }
 
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
-const PAPER_TEXTURE_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperPulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperPulp)'/%3E%3Ccircle cx='45' cy='78' r='0.75' fill='%23332211' opacity='0.25'/%3E%3Ccircle cx='180' cy='220' r='0.6' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='240' cy='60' r='0.9' fill='%23443322' opacity='0.2'/%3E%3Ccircle cx='95' cy='190' r='0.7' fill='%23332211' opacity='0.22'/%3E%3Ccircle cx='140' cy='120' r='0.5' fill='%23111111' opacity='0.18'/%3E%3Ccircle cx='270' cy='260' r='0.8' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='30' cy='250' r='0.65' fill='%23442211' opacity='0.22'/%3E%3C/svg%3E")`;
+const PAPER_TEXTURE_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperPulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperPulp)'/%3E%3Ccircle cx='45' cy='78' r='0.75' fill='%23332211' opacity='0.25'/%3E%3Ccircle cx='180' cy='220' r='0.6' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='240' cy='60' r='0.9' fill='%23443322' opacity='0.2'/%3E%3Ccircle cx='95' cy='190' r='0.7' fill='%23332211' opacity='0.22'/%3E%3Ccircle cx='140' cy='120' r='0.5' fill='%23111111' opacity='0.18'/%3E%3Ccircle cx='270' cy='260' r='0.8' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='30' cy='250' r='0.65' fill='%23442211' opacity='0.22'/%3E%3C/svg%3E")`;
 
 export function CardStack({
   cards,
@@ -45,13 +45,20 @@ export function CardStack({
 
   // Motion values for the top active card
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 0, 300], [-14, 0, 14]);
+  const rotate = useTransform(x, [-600, 0, 600], [-18, 0, 18]);
 
   // Dynamic transforms for Layer 2 (middle card) as top card is dragged
   const nextScale = useTransform(x, [-250, 0, 250], [1, 0.96, 1]);
   const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
   const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
   const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
+
+  const getExitDistance = () => {
+    if (typeof window !== 'undefined') {
+      return Math.max(window.innerWidth * 1.15, 1400);
+    }
+    return 1400;
+  };
 
   const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isAnimatingOut || isShuffling) return;
@@ -60,28 +67,30 @@ export function CardStack({
     const velocityThreshold = 250;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
-      // Forward / Swipe Right -> Animate off-screen to the right then advance
+      // Forward / Swipe Right -> Animate all the way off-screen to the right edge of monitor
       setIsAnimatingOut(true);
       triggerHaptic('snap');
-      await animate(x, 600, {
-        duration: 0.18,
-        ease: 'easeOut',
+      const exitDistance = getExitDistance();
+      await animate(x, exitDistance, {
+        duration: 0.28,
+        ease: [0.32, 0.72, 0, 1],
       });
       x.set(0);
       setIsAnimatingOut(false);
       onNext();
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
-        // Reverse / Swipe Left -> Previous card flies back IN from the right (exact reverse of swipe right)
+        // Reverse / Swipe Left -> Previous card flies back IN from the right edge of the screen
         setIsAnimatingOut(true);
         triggerHaptic('light');
         onPrev();
-        x.set(550);
+        const exitDistance = getExitDistance();
+        x.set(exitDistance);
         setIsAnimatingOut(false);
         animate(x, 0, {
           type: 'spring',
-          damping: 22,
-          stiffness: 280,
+          damping: 24,
+          stiffness: 260,
         });
       } else {
         triggerHaptic('light');
