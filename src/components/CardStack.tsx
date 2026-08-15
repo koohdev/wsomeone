@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform, animate, PanInfo } from 'framer-motion';
 import { Card } from '@/types';
 
@@ -37,7 +37,7 @@ export function CardStack({
   const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
   const thirdCard = currentIndex + 2 < cards.length ? cards[currentIndex + 2] : null;
 
-  // Fixed, consistent double-sided fanned stack rotations (no flip-flop patterns)
+  // Fixed, consistent double-sided fanned stack rotations
   const stackLeftRotate = -3.2; // Layer 3 peeking left
   const stackRightRotate = 2.8; // Layer 2 peeking right
 
@@ -58,6 +58,7 @@ export function CardStack({
     const velocityThreshold = 250;
 
     if (info.offset.x > threshold || info.velocity.x > velocityThreshold) {
+      // Forward / Swipe Right -> Animate off-screen to the right then advance
       setIsAnimatingOut(true);
       triggerHaptic('snap');
       await animate(x, 600, {
@@ -69,15 +70,17 @@ export function CardStack({
       onNext();
     } else if (info.offset.x < -threshold || info.velocity.x < -velocityThreshold) {
       if (currentIndex > 0) {
+        // Reverse / Swipe Left -> Previous card flies back IN from the right (exact reverse of swipe right)
         setIsAnimatingOut(true);
         triggerHaptic('light');
-        await animate(x, -600, {
-          duration: 0.18,
-          ease: 'easeOut',
-        });
-        x.set(0);
-        setIsAnimatingOut(false);
         onPrev();
+        x.set(550);
+        setIsAnimatingOut(false);
+        animate(x, 0, {
+          type: 'spring',
+          damping: 22,
+          stiffness: 280,
+        });
       } else {
         triggerHaptic('light');
         animate(x, 0, { type: 'spring', damping: 20, stiffness: 300 });
