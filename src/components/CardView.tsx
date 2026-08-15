@@ -100,14 +100,6 @@ export function CardView({
   useWakeLock(true);
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
 
-  // Play card deal-in / shuffle sound on topic mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      triggerHaptic('shuffle');
-    }, 60);
-    return () => clearTimeout(timer);
-  }, [deck.id, triggerHaptic]);
-
   const handleReshuffle = useCallback(() => {
     const coverCard = deck.cards[0];
     const questionCards = deck.cards.slice(1);

@@ -3,6 +3,7 @@
 import React from 'react';
 import { Deck } from '@/types';
 import { ProgressCircle } from '@/components/ui/ProgressCircle';
+import { useHaptics } from '@/hooks/useHaptics';
 
 interface TopicMenuProps {
   decks: Deck[];
@@ -13,6 +14,8 @@ interface TopicMenuProps {
 const PAPER_TEXTURE_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperPulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperPulp)'/%3E%3Ccircle cx='45' cy='78' r='0.75' fill='%23332211' opacity='0.25'/%3E%3Ccircle cx='180' cy='220' r='0.6' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='240' cy='60' r='0.9' fill='%23443322' opacity='0.2'/%3E%3Ccircle cx='95' cy='190' r='0.7' fill='%23332211' opacity='0.22'/%3E%3Ccircle cx='140' cy='120' r='0.5' fill='%23111111' opacity='0.18'/%3E%3Ccircle cx='270' cy='260' r='0.8' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='30' cy='250' r='0.65' fill='%23442211' opacity='0.22'/%3E%3C/svg%3E")`;
 
 export function TopicMenu({ decks, onSelectDeck, progressMap = {} }: TopicMenuProps) {
+  const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
+
   return (
     <div className="min-h-screen w-full bg-[#EDEDEF] text-[#C10016] select-none font-sans flex flex-col items-center px-4 py-12 sm:py-16">
       <div className="w-full max-w-sm flex flex-col items-center">
@@ -39,7 +42,10 @@ export function TopicMenu({ decks, onSelectDeck, progressMap = {} }: TopicMenuPr
             return (
               <button
                 key={deck.id}
-                onClick={() => onSelectDeck(deck)}
+                onClick={() => {
+                  triggerHaptic('snap');
+                  onSelectDeck(deck);
+                }}
                 className="relative w-full aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 flex flex-col justify-between text-left border active:scale-[0.98] transition-transform overflow-hidden group cursor-pointer shadow-md"
                 style={{
                   backgroundColor: '#FAF8F5',
