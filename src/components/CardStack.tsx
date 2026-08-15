@@ -10,6 +10,7 @@ interface CardStackProps {
   onNext: () => void;
   onPrev: () => void;
   onReshuffle: () => void;
+  onOpenMenu?: () => void;
   onExit?: () => void;
   editionText?: string;
   triggerHaptic: (pattern?: 'light' | 'snap') => void;
@@ -24,6 +25,7 @@ export function CardStack({
   onNext,
   onPrev,
   onReshuffle,
+  onOpenMenu,
   onExit,
   editionText = 'WSOMEONE',
   triggerHaptic,
@@ -122,8 +124,13 @@ export function CardStack({
           transition={{ type: 'spring', damping: 20, stiffness: 250 }}
           onClick={() => {
             triggerHaptic('snap');
-            if (onExit) onExit();
-            else onReshuffle();
+            if (onOpenMenu) {
+              onOpenMenu();
+            } else if (onExit) {
+              onExit();
+            } else {
+              onReshuffle();
+            }
           }}
           style={getCardStyle(false)}
           className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border select-none active:scale-[0.99] transition-transform overflow-hidden"
@@ -157,7 +164,7 @@ export function CardStack({
               YOU’VE REACHED THE END.
             </h2>
             <p className="text-[#C10016]/70 text-xs sm:text-sm font-medium mt-2">
-              Tap anywhere to exit to topics or reshuffle.
+              Tap anywhere to open topics menu or reshuffle.
             </p>
           </div>
 

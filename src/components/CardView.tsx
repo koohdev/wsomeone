@@ -30,8 +30,11 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
 
   const handleReshuffle = useCallback(() => {
-    const shuffled = [...deck.cards].sort(() => Math.random() - 0.5);
-    setCards(shuffled);
+    // Keep cover card at index 0 and shuffle the rest of the question cards
+    const coverCard = deck.cards[0];
+    const questionCards = deck.cards.slice(1);
+    const shuffledQuestions = [...questionCards].sort(() => Math.random() - 0.5);
+    setCards([coverCard, ...shuffledQuestions]);
     setCurrentIndex(0);
     triggerHaptic('snap');
   }, [deck.cards, triggerHaptic]);
@@ -64,20 +67,20 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
         handlePrev();
       } else if (e.key === 'Escape') {
         e.preventDefault();
-        onExit();
+        setIsSheetOpen(true);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev, onExit, isSheetOpen]);
+  }, [handleNext, handlePrev, isSheetOpen]);
 
   const totalCards = cards.length;
   const displayIndex = Math.min(currentIndex + 1, totalCards);
 
   return (
     <div className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
-      {/* Top Bar: Centered Counter (no ✕ on top left) */}
+      {/* Top Bar: Centered Counter */}
       <header className="relative z-30 flex items-center justify-center px-6 pt-6 sm:px-10 sm:pt-8 w-full max-w-xl mx-auto">
         <div className="text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
           {currentIndex >= totalCards ? `${totalCards}/${totalCards}` : `${displayIndex}/${totalCards}`}
@@ -92,6 +95,7 @@ export function CardView({ deck, onSelectDeck, onExit }: CardViewProps) {
           onNext={handleNext}
           onPrev={handlePrev}
           onReshuffle={handleReshuffle}
+          onOpenMenu={() => setIsSheetOpen(true)}
           onExit={onExit}
           editionText={deck.editionText}
           triggerHaptic={triggerHaptic}
