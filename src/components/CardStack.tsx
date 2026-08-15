@@ -15,6 +15,16 @@ interface CardStackProps {
   triggerHaptic: (pattern?: 'light' | 'snap') => void;
 }
 
+// Deterministic organic tilt helper (-1.4deg to +1.4deg) so each card settles with natural imperfection
+function getCardOrganicTilt(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash << 5) - hash + id.charCodeAt(i);
+    hash |= 0;
+  }
+  return ((Math.abs(hash) % 29) - 14) / 10;
+}
+
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
 const PAPER_TEXTURE_DATA_URI = `url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='paperPulp'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.1  0 0 0 0 0.08  0 0 0 0 0.06  0 0 0 0.35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paperPulp)'/%3E%3Ccircle cx='45' cy='78' r='0.75' fill='%23332211' opacity='0.25'/%3E%3Ccircle cx='180' cy='220' r='0.6' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='240' cy='60' r='0.9' fill='%23443322' opacity='0.2'/%3E%3Ccircle cx='95' cy='190' r='0.7' fill='%23332211' opacity='0.22'/%3E%3Ccircle cx='140' cy='120' r='0.5' fill='%23111111' opacity='0.18'/%3E%3Ccircle cx='270' cy='260' r='0.8' fill='%23221100' opacity='0.2'/%3E%3Ccircle cx='30' cy='250' r='0.65' fill='%23442211' opacity='0.22'/%3E%3C/svg%3E")`;
 
@@ -35,14 +45,21 @@ export function CardStack({
   const nextCard = currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
   const thirdCard = currentIndex + 2 < cards.length ? cards[currentIndex + 2] : null;
 
+  // Organic rest rotations
+  const topCardBaseTilt = currentCard ? getCardOrganicTilt(currentCard.id) : 0;
+  const nextCardBaseTilt = nextCard ? getCardOrganicTilt(nextCard.id) : 0;
+  const nextStackTilt = nextCardBaseTilt + (currentIndex % 2 === 0 ? 2.6 : -2.6);
+  const thirdCardTilt = currentIndex % 2 === 0 ? -3.6 : 3.6;
+
   // Motion values for the top active card
   const x = useMotionValue(0);
-  const rotate = useTransform(x, [-300, 0, 300], [-14, 0, 14]);
+  const rotate = useTransform(x, [-300, 0, 300], [-14 + topCardBaseTilt, topCardBaseTilt, 14 + topCardBaseTilt]);
 
   // Dynamic transforms for the 2nd card underneath while top card is dragged
   const nextScale = useTransform(x, [-250, 0, 250], [1, 0.95, 1]);
   const nextY = useTransform(x, [-250, 0, 250], [0, 8, 0]);
-  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.85, 1]);
+  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.88, 1]);
+  const nextRotate = useTransform(x, [-250, 0, 250], [nextCardBaseTilt, nextStackTilt, nextCardBaseTilt]);
 
   const handleDragEnd = async (_e: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     if (isAnimatingOut) return;
@@ -169,20 +186,20 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[500px] items-center justify-center px-4 select-none touch-none">
-      {/* 3rd Card in Stack (Stack depth) */}
+      {/* 3rd Card in Stack (Visual feedback with subtle counter-tilt) */}
       {thirdCard && (
         <div
           aria-hidden="true"
-          className="absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-35"
+          className="absolute inset-x-8 top-4 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-40 transition-transform duration-300"
           style={{
             ...getCardStyle(thirdCard.isCover),
-            transform: 'translateY(14px) scale(0.91)',
+            transform: `translateY(14px) scale(0.91) rotate(${thirdCardTilt}deg)`,
             zIndex: 1,
           }}
         />
       )}
 
-      {/* 2nd Card (Directly underneath with physical cotton paper texture) */}
+      {/* 2nd Card (Underneath with stack tilt peeking out) */}
       {nextCard && (
         <motion.div
           key={`next-${nextCard.id}`}
@@ -192,6 +209,7 @@ export function CardStack({
             scale: nextScale,
             y: nextY,
             opacity: nextOpacity,
+            rotate: nextRotate,
             zIndex: 2,
           }}
           className="absolute inset-x-4 top-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 text-center border pointer-events-none will-change-transform overflow-hidden"
@@ -276,7 +294,7 @@ export function CardStack({
         </motion.div>
       )}
 
-      {/* Active Top Draggable Card */}
+      {/* Active Top Draggable Card (with its own organic resting tilt) */}
       {currentCard && (
         <motion.div
           key={`current-${currentCard.id}`}
