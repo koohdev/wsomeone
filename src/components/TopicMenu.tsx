@@ -16,13 +16,21 @@ export function TopicMenu({ decks, onSelectDeck, progressMap = {} }: TopicMenuPr
   return (
     <div className="min-h-screen w-full bg-[#EDEDEF] text-[#C10016] select-none font-sans flex flex-col items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm flex flex-col items-center">
-        {/* Brand Title: Bold, big, and no space between letters */}
-        <h1
-          className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-center mb-8 text-[#C10016]"
-          style={{ textShadow: '0 0.5px 1px rgba(193, 0, 22, 0.2)' }}
-        >
-          WSOMEONE
-        </h1>
+        {/* Brand Header: WSOMEONE + Subtitle */}
+        <div className="flex flex-col items-center mb-8 text-center px-2">
+          <h1
+            className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-[#C10016]"
+            style={{ textShadow: '0 0.5px 1px rgba(193, 0, 22, 0.2)' }}
+          >
+            WSOMEONE
+          </h1>
+          <p
+            className="mt-1.5 text-xs sm:text-[13px] font-bold uppercase tracking-tight text-[#C10016]/75 max-w-xs leading-snug"
+            style={{ textShadow: '0 0.3px 0.3px rgba(193, 0, 22, 0.1)' }}
+          >
+            A purposeful card game designed to deepen meaningful human connection.
+          </p>
+        </div>
 
         {/* Stack of Topic Cards with Left-Aligned Text & Right-Aligned Progress Circle */}
         <div className="w-full flex flex-col gap-3">
