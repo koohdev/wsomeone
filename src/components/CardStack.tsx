@@ -166,15 +166,10 @@ export function CardStack({
                 {nextCard.coverTitle || nextCard.text}
               </h2>
               {nextCard.coverTagline && (
-                <p className="mt-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/80 max-w-xs leading-snug">
+                <p className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
                   {nextCard.coverTagline}
                 </p>
               )}
-              <div className="mt-5">
-                <span className="inline-flex items-center px-3.5 py-1 rounded-full border border-white/30 bg-white/10 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.15em] font-semibold text-white/90 shadow-xs">
-                  {nextCard.coverPrompt || 'SWIPE RIGHT TO START →'}
-                </span>
-              </div>
             </div>
           ) : (
             <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
@@ -184,13 +179,15 @@ export function CardStack({
             </div>
           )}
 
-          {/* Card Footer */}
+          {/* Card Footer (Replacing WSOMEONE with SWIPE RIGHT text on cover cards) */}
           <div
             className={`text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
               nextCard.isCover ? 'text-white/80' : 'text-[#C10016]'
             }`}
           >
-            {nextCard.edition || editionText}
+            {nextCard.isCover
+              ? (nextCard.coverPrompt || 'SWIPE RIGHT TO START →')
+              : (nextCard.edition || editionText)}
           </div>
         </motion.div>
       )}
@@ -232,15 +229,10 @@ export function CardStack({
                 {currentCard.coverTitle || currentCard.text}
               </h2>
               {currentCard.coverTagline && (
-                <p className="mt-2.5 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/80 max-w-xs leading-snug">
+                <p className="mt-3 text-xs sm:text-sm font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
                   {currentCard.coverTagline}
                 </p>
               )}
-              <div className="mt-5">
-                <span className="inline-flex items-center px-3.5 py-1 rounded-full border border-white/30 bg-white/10 text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.15em] font-semibold text-white/90 shadow-xs">
-                  {currentCard.coverPrompt || 'SWIPE RIGHT TO START →'}
-                </span>
-              </div>
             </div>
           ) : (
             <div className="my-auto px-2 sm:px-6 flex items-center justify-center">
@@ -250,13 +242,15 @@ export function CardStack({
             </div>
           )}
 
-          {/* Card Footer */}
+          {/* Card Footer (Replacing WSOMEONE with SWIPE RIGHT text on cover cards) */}
           <div
             className={`text-[10px] sm:text-[11px] font-bold tracking-[0.2em] uppercase whitespace-pre-line leading-tight ${
               currentCard.isCover ? 'text-white/80' : 'text-[#C10016]'
             }`}
           >
-            {currentCard.edition || editionText}
+            {currentCard.isCover
+              ? (currentCard.coverPrompt || 'SWIPE RIGHT TO START →')
+              : (currentCard.edition || editionText)}
           </div>
         </motion.div>
       )}
