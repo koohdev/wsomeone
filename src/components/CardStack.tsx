@@ -166,7 +166,7 @@ export function CardStack({
 
   if (isEnd && !isShuffling) {
     return (
-      <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4">
+      <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[280px] landscape:sm:max-w-[300px] landscape:md:max-w-[320px] landscape:lg:max-w-[480px] items-center justify-center px-4">
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -229,7 +229,7 @@ export function CardStack({
   }
 
   return (
-    <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4 select-none touch-none">
+    <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] landscape:max-w-[280px] landscape:sm:max-w-[300px] landscape:md:max-w-[320px] landscape:lg:max-w-[480px] items-center justify-center px-4 select-none touch-none">
       {/* SHUFFLE CHOREOGRAPHY: 3.0s Riffle + Center Hover Lift + Physical Center Tabletop Drop */}
       {isShuffling ? (
         <div className="relative w-full aspect-[1.38/1] pointer-events-none">

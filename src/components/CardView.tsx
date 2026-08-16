@@ -211,7 +211,7 @@ export function CardView({
   return (
     <div className="relative flex h-[100dvh] max-h-[100dvh] w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
       {/* Top Bar: Centered Counter with NumberFlow Animation */}
-      <header className="relative z-30 flex shrink-0 items-center justify-center px-6 pt-[max(1rem,env(safe-area-inset-top,16px))] sm:pt-7 w-full max-w-xl mx-auto">
+      <header className="relative z-30 flex shrink-0 items-center justify-center px-6 pt-[max(1rem,env(safe-area-inset-top,16px))] sm:pt-7 landscape:pt-2 landscape:sm:pt-2 landscape:lg:pt-7 w-full max-w-xl mx-auto">
         <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
           <NumberFlow
             value={displayIndex}
@@ -224,7 +224,7 @@ export function CardView({
       </header>
 
       {/* Center Card Stage */}
-      <main className="relative flex flex-1 items-center justify-center py-2 sm:py-6 overflow-hidden min-h-0">
+      <main className="relative flex flex-1 items-center justify-center py-2 sm:py-6 landscape:py-1 landscape:lg:py-6 overflow-hidden min-h-0">
         <CardStack
           cards={cards}
           currentIndex={currentIndex}
