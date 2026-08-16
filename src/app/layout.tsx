@@ -27,6 +27,24 @@ const sctoGroteskA = localFont({
 export const metadata: Metadata = {
   title: "wsomeone",
   description: "wsomeone — tactile connection cards",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icon.png" },
+      { url: "/icon.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon.png", sizes: "512x512", type: "image/png" },
+    ],
+    shortcut: "/icon.png",
+    apple: [
+      { url: "/icon.png" },
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "wsomeone",
+  },
 };
 
 export const viewport: Viewport = {
