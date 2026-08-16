@@ -210,7 +210,7 @@ export function CardStack({
               className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm font-bold tracking-tight uppercase leading-snug"
               style={{ textShadow: "0 0.4px 0.4px rgba(193, 0, 22, 0.15)" }}
             >
-              YOUΓÇÖVE REACHED THE END.
+              YOU'VE REACHED THE END.
             </h2>
             <p className="text-[#C10016]/70 text-xs sm:text-sm landscape:text-[11px] font-medium mt-1">
               Tap anywhere to open topics menu or reshuffle.
@@ -532,7 +532,7 @@ export function CardStack({
                 }}
               >
                 {nextCard.isCover
-                  ? nextCard.coverPrompt || "READY TO START? SWIPE RIGHT ΓåÆ"
+                  ? nextCard.coverPrompt || "READY TO START? SWIPE RIGHT →"
                   : nextCard.edition || editionText}
               </div>
             </motion.div>
@@ -632,7 +632,7 @@ export function CardStack({
                 }}
               >
                 {currentCard.isCover
-                  ? currentCard.coverPrompt || "READY TO START? SWIPE RIGHT ΓåÆ"
+                  ? currentCard.coverPrompt || "READY TO START? SWIPE RIGHT →"
                   : currentCard.edition || editionText}
               </div>
             </motion.div>
