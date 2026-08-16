@@ -8,9 +8,9 @@ import { TopicMenu } from '@/components/TopicMenu';
 import { CardView } from '@/components/CardView';
 import { useDeckProgress } from '@/hooks/useDeckProgress';
 
-const VIEW_TRANSITION = {
-  duration: 0.28,
-  ease: [0.22, 1, 0.36, 1] as const,
+const SWUP_TRANSITION = {
+  duration: 0.45,
+  ease: [0.25, 0.46, 0.45, 0.94] as const,
 };
 
 export default function Home() {
@@ -30,11 +30,11 @@ export default function Home() {
         {activeDeck ? (
           <motion.div
             key="card-view"
-            className="w-full h-[100dvh] max-h-[100dvh] overflow-hidden will-change-transform"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={VIEW_TRANSITION}
+            className="w-full h-[100dvh] max-h-[100dvh] overflow-hidden"
+            initial={{ opacity: 0, filter: 'blur(7px)' }}
+            animate={{ opacity: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, filter: 'blur(7px)' }}
+            transition={SWUP_TRANSITION}
           >
             <CardView
               deck={activeDeck}
@@ -49,11 +49,11 @@ export default function Home() {
         ) : (
           <motion.div
             key="topic-menu"
-            className="w-full min-h-[100dvh] will-change-transform"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={VIEW_TRANSITION}
+            className="w-full min-h-[100dvh]"
+            initial={{ opacity: 0, filter: 'blur(7px)' }}
+            animate={{ opacity: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, filter: 'blur(7px)' }}
+            transition={SWUP_TRANSITION}
           >
             <TopicMenu
               decks={DECKS}
