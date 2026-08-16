@@ -75,11 +75,26 @@ export function CardView({
   const [isShuffling, setIsShuffling] = useState(false);
 
   const prevDeckIdRef = useRef(deck.id);
+  const shuffleTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const clearShuffleTimeouts = useCallback(() => {
+    shuffleTimeoutsRef.current.forEach(clearTimeout);
+    shuffleTimeoutsRef.current = [];
+  }, []);
+
+  // Clean up any pending shuffle timeouts on unmount
+  useEffect(() => {
+    return () => {
+      clearShuffleTimeouts();
+    };
+  }, [clearShuffleTimeouts]);
 
   // Sync cards and restored index when deck changes
   useEffect(() => {
     if (prevDeckIdRef.current !== deck.id) {
       prevDeckIdRef.current = deck.id;
+      clearShuffleTimeouts();
+      setIsShuffling(false);
       const initialCards = restoreCardOrder(deck.cards, savedState?.cardIds);
       setCards(initialCards);
       const initialIndex =
@@ -88,7 +103,7 @@ export function CardView({
           : 0;
       setCurrentIndex(initialIndex);
     }
-  }, [deck, savedState]);
+  }, [deck, savedState, clearShuffleTimeouts]);
 
   // Sync progress to persistent storage whenever index or cards change
   useEffect(() => {
@@ -102,48 +117,55 @@ export function CardView({
   const { triggerHaptic } = useHaptics({ soundEnabled: true, hapticsEnabled: true });
 
   const handleReshuffle = useCallback(() => {
+    clearShuffleTimeouts();
     setIsShuffling(true);
     triggerHaptic('shuffle');
 
-    // Update the card sequence at 1.0s while cards are riffled
-    setTimeout(() => {
+    // 1. Update the card sequence at 1.5s midway through the 3.0s riffle
+    const t1 = setTimeout(() => {
       const coverCard = deck.cards[0];
       const questionCards = deck.cards.slice(1);
       const shuffledQuestions = [...questionCards].sort(() => Math.random() - 0.5);
       const newCards = [coverCard, ...shuffledQuestions];
       setCards(newCards);
       setCurrentIndex(0);
-    }, 1000);
+    }, 1500);
 
-    // Tactile thud at 1.8s when the top cover drops down into the dead center of the tabletop
-    setTimeout(() => {
+    // 2. Tactile thud at 2.8s when the top cover drops down into the dead center of the tabletop
+    const t2 = setTimeout(() => {
       triggerHaptic('medium');
-    }, 1800);
+    }, 2800);
 
-    setTimeout(() => {
+    // 3. Complete shuffle choreography at 3.0s matching the audio duration
+    const t3 = setTimeout(() => {
       setIsShuffling(false);
-    }, 2200);
-  }, [deck.cards, triggerHaptic]);
+    }, 3000);
+
+    shuffleTimeoutsRef.current = [t1, t2, t3];
+  }, [deck.cards, triggerHaptic, clearShuffleTimeouts]);
 
   const handleRestartDeck = useCallback(() => {
+    clearShuffleTimeouts();
     setIsShuffling(true);
     triggerHaptic('shuffle');
 
-    setTimeout(() => {
+    const t1 = setTimeout(() => {
       setCurrentIndex(0);
       if (onResetProgress) {
         onResetProgress(deck.id);
       }
-    }, 1000);
+    }, 1500);
 
-    setTimeout(() => {
+    const t2 = setTimeout(() => {
       triggerHaptic('medium');
-    }, 1800);
+    }, 2800);
 
-    setTimeout(() => {
+    const t3 = setTimeout(() => {
       setIsShuffling(false);
-    }, 2200);
-  }, [deck.id, onResetProgress, triggerHaptic]);
+    }, 3000);
+
+    shuffleTimeoutsRef.current = [t1, t2, t3];
+  }, [deck.id, onResetProgress, triggerHaptic, clearShuffleTimeouts]);
 
   const handleNext = useCallback(() => {
     if (currentIndex < cards.length && !isShuffling) {
@@ -164,6 +186,8 @@ export function CardView({
         return;
       }
 
+      if (isShuffling) return;
+
       if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
         handleNext();
@@ -179,7 +203,7 @@ export function CardView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev, isSheetOpen, triggerHaptic]);
+  }, [handleNext, handlePrev, isSheetOpen, isShuffling, triggerHaptic]);
 
   const totalCards = cards.length;
   const displayIndex = Math.min(currentIndex + 1, totalCards);

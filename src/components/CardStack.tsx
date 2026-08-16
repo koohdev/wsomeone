@@ -90,7 +90,9 @@ export function CardStack({
     const rightThreshold = 65;
     const rightVelocityThreshold = 220;
     const leftThreshold =
-      typeof window !== "undefined" ? window.innerWidth * 0.2 : 120;
+      typeof window !== "undefined"
+        ? Math.min(120, Math.max(65, window.innerWidth * 0.2))
+        : 100;
 
     if (
       info.offset.x > rightThreshold ||
@@ -229,21 +231,21 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4 select-none touch-none">
-      {/* SHUFFLE CHOREOGRAPHY: Crisp Riffle + Center Hover Lift + Physical Center Tabletop Drop */}
+      {/* SHUFFLE CHOREOGRAPHY: 3.0s Riffle + Center Hover Lift + Physical Center Tabletop Drop */}
       {isShuffling ? (
         <div className="relative w-full aspect-[1.38/1] pointer-events-none">
           {/* 1. Left Deck Base Card */}
           {shuffleCard1 && (
             <motion.div
               animate={{
-                x: [0, -48, -48, -24, 0, 0],
-                y: [0, 6, 6, 2, 0, 0],
-                rotate: [0, -7, -7, -3, 0, 0],
-                scale: [1, 0.98, 0.98, 1, 1, 1],
+                x: [0, -48, -48, -24, 0, 0, 0],
+                y: [0, 6, 6, 2, 0, 0, 0],
+                rotate: [0, -7, -7, -3, 0, 0, 0],
+                scale: [1, 0.98, 0.98, 1, 1, 1, 1],
               }}
               transition={{
-                duration: 2.2,
-                times: [0, 0.25, 0.5, 0.7, 0.82, 1],
+                duration: 3.0,
+                times: [0, 0.2, 0.55, 0.75, 0.88, 0.95, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 1 }}
@@ -271,14 +273,14 @@ export function CardStack({
           {shuffleCard2 && (
             <motion.div
               animate={{
-                x: [0, 48, 48, 24, 0, 0],
-                y: [0, 6, 6, 2, 0, 0],
-                rotate: [0, 7, 7, 3, 0, 0],
-                scale: [1, 0.98, 0.98, 1, 1, 1],
+                x: [0, 48, 48, 24, 0, 0, 0],
+                y: [0, 6, 6, 2, 0, 0, 0],
+                rotate: [0, 7, 7, 3, 0, 0, 0],
+                scale: [1, 0.98, 0.98, 1, 1, 1, 1],
               }}
               transition={{
-                duration: 2.2,
-                times: [0, 0.25, 0.5, 0.7, 0.82, 1],
+                duration: 3.0,
+                times: [0, 0.2, 0.55, 0.75, 0.88, 0.95, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 2 }}
@@ -306,14 +308,14 @@ export function CardStack({
           {shuffleCard3 && (
             <motion.div
               animate={{
-                x: [0, -42, -18, 8, 0, 0],
-                y: [0, -6, 6, -2, 0, 0],
-                rotate: [0, -6, 5, -2, 0, 0],
-                scale: [0.96, 1.01, 0.99, 1, 1, 1],
+                x: [0, -42, -18, 8, 0, 0, 0],
+                y: [0, -6, 6, -2, 0, 0, 0],
+                rotate: [0, -6, 5, -2, 0, 0, 0],
+                scale: [0.96, 1.01, 0.99, 1, 1, 1, 1],
               }}
               transition={{
-                duration: 2.2,
-                times: [0, 0.3, 0.55, 0.72, 0.82, 1],
+                duration: 3.0,
+                times: [0, 0.25, 0.6, 0.78, 0.88, 0.95, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 3 }}
@@ -341,14 +343,14 @@ export function CardStack({
           {shuffleCard4 && (
             <motion.div
               animate={{
-                x: [0, 42, 18, -8, 0, 0],
-                y: [0, -6, 6, -2, 0, 0],
-                rotate: [0, 6, -5, 2, 0, 0],
-                scale: [0.96, 1.01, 0.99, 1, 1, 1],
+                x: [0, 42, 18, -8, 0, 0, 0],
+                y: [0, -6, 6, -2, 0, 0, 0],
+                rotate: [0, 6, -5, 2, 0, 0, 0],
+                scale: [0.96, 1.01, 0.99, 1, 1, 1, 1],
               }}
               transition={{
-                duration: 2.2,
-                times: [0, 0.35, 0.6, 0.74, 0.82, 1],
+                duration: 3.0,
+                times: [0, 0.28, 0.65, 0.8, 0.88, 0.95, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 4 }}
@@ -382,8 +384,8 @@ export function CardStack({
                 scale: [1, 1.02, 1.03, 1.06, 1.07, 0.98, 1.01, 1],
               }}
               transition={{
-                duration: 2.2,
-                times: [0, 0.2, 0.45, 0.65, 0.75, 0.82, 0.9, 1],
+                duration: 3.0,
+                times: [0, 0.2, 0.45, 0.7, 0.82, 0.93, 0.97, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(true), zIndex: 10 }}

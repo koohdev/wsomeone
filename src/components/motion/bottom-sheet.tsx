@@ -122,8 +122,8 @@ export function BottomSheet({
   const snapValue = snapPoints[snap];
   const heightStyle =
     snapValue === "auto"
-      ? { maxHeight: "92vh" }
-      : { height: `${snapValue * 100}vh` };
+      ? { maxHeight: "92dvh" }
+      : { height: `${snapValue * 100}dvh` };
 
   if (!mounted) return null;
 
