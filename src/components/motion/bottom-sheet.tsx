@@ -139,7 +139,7 @@ export function BottomSheet({
             exit={{ opacity: 0 }}
             transition={DRAWER}
             onClick={() => onOpenChange(false)}
-            className="pointer-events-auto absolute inset-0 bg-black/40"
+            className="pointer-events-auto absolute inset-0 bg-transparent"
           />
           <motion.div
             ref={sheetRef}

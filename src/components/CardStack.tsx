@@ -73,6 +73,16 @@ export function CardStack({
   const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
   const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
 
+  // Dynamic transforms for Layer 3 (bottom card) as top card is dragged
+  // Smoothly advances from Layer 3 resting state (y:10, rot:left, op:0.5) to Layer 2 resting state (y:6, rot:right, op:0.9)
+  const thirdY = useTransform(x, [-250, 0, 250], [6, 10, 6]);
+  const thirdOpacity = useTransform(x, [-250, 0, 250], [0.9, 0.5, 0.9]);
+  const thirdRotate = useTransform(
+    x,
+    [-250, 0, 250],
+    [stackRightRotate, stackLeftRotate, stackRightRotate],
+  );
+
   const getExitDistance = () => {
     if (typeof window !== "undefined") {
       return window.innerWidth / 2 + 320;
@@ -427,14 +437,17 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
-          {/* Layer 3: Bottom card consistently peeking to the LEFT */}
+          {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly transitioning to Layer 2 position on swipe */}
           {thirdCard && (
-            <div
+            <motion.div
+              key={`third-${thirdCard.id}`}
               aria-hidden="true"
-              className="absolute inset-0 rounded-[32px] border pointer-events-none opacity-50 overflow-hidden"
+              className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
+                y: thirdY,
+                rotate: thirdRotate,
+                opacity: thirdOpacity,
                 zIndex: 1,
               }}
             />
