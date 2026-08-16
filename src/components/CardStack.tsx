@@ -52,8 +52,6 @@ export function CardStack({
     currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
   const thirdCard =
     currentIndex + 2 < cards.length ? cards[currentIndex + 2] : null;
-  const fourthCard =
-    currentIndex + 3 < cards.length ? cards[currentIndex + 3] : null;
 
   // Selected sample cards for visual shuffle riffle
   const shuffleCard1 = cards[1] || cards[0];
@@ -63,37 +61,12 @@ export function CardStack({
   const shuffleCover = cards[0];
 
   // Fixed, consistent double-sided fanned stack rotations
-  const stackLeftRotate = -3.2; // Layer 3 & 4 peeking left
+  const stackLeftRotate = -3.2; // Layer 3 peeking left
   const stackRightRotate = 2.8; // Layer 2 peeking right
 
   // Motion values for the top active card
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
-
-  // Dynamic transforms for Layer 2 (middle card) as top card is dragged
-  const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
-  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
-  const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
-
-  // Dynamic transforms for Layer 3 (bottom card) as top card is dragged
-  // Smoothly advances from Layer 3 resting state (y:10, rot:left, op:0.5) to Layer 2 resting state (y:6, rot:right, op:0.9)
-  const thirdY = useTransform(x, [-250, 0, 250], [6, 10, 6]);
-  const thirdOpacity = useTransform(x, [-250, 0, 250], [0.9, 0.5, 0.9]);
-  const thirdRotate = useTransform(
-    x,
-    [-250, 0, 250],
-    [stackRightRotate, stackLeftRotate, stackRightRotate],
-  );
-
-  // Dynamic transforms for Layer 4 (incoming base card) as top card is dragged
-  // Smoothly rises from hidden state (y:14, rot:left, op:0) into Layer 3 resting state (y:10, rot:left, op:0.5)
-  const fourthY = useTransform(x, [-250, 0, 250], [10, 14, 10]);
-  const fourthOpacity = useTransform(x, [-250, 0, 250], [0.5, 0, 0.5]);
-  const fourthRotate = useTransform(
-    x,
-    [-250, 0, 250],
-    [stackLeftRotate, stackLeftRotate, stackLeftRotate],
-  );
 
   const getExitDistance = () => {
     if (typeof window !== "undefined") {
@@ -449,48 +422,33 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
-          {/* Layer 4: Base card smoothly fading in from opacity 0 to Layer 3 position on swipe */}
-          {fourthCard && (
-            <motion.div
-              key={`fourth-${fourthCard.id}`}
-              aria-hidden="true"
-              className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
-              style={{
-                ...getCardStyle(fourthCard.isCover),
-                y: fourthY,
-                rotate: fourthRotate,
-                opacity: fourthOpacity,
-                zIndex: 0,
-              }}
-            />
-          )}
-
-          {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly transitioning to Layer 2 position on swipe */}
+          {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly springs into position */}
           {thirdCard && (
             <motion.div
-              key={`third-${thirdCard.id}`}
+              key={`card-${thirdCard.id}`}
+              initial={{ y: 14, rotate: stackLeftRotate, opacity: 0 }}
+              animate={{ y: 10, rotate: stackLeftRotate, opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              transition={{ type: "spring", damping: 26, stiffness: 240 }}
               aria-hidden="true"
               className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                y: thirdY,
-                rotate: thirdRotate,
-                opacity: thirdOpacity,
                 zIndex: 1,
               }}
             />
           )}
 
-          {/* Layer 2: Middle card consistently peeking to the RIGHT */}
+          {/* Layer 2: Middle card consistently peeking to the RIGHT, smoothly springs into position */}
           {nextCard && (
             <motion.div
-              key={`next-${nextCard.id}`}
+              key={`card-${nextCard.id}`}
+              initial={{ y: 10, rotate: stackLeftRotate, opacity: 0.5 }}
+              animate={{ y: 6, rotate: stackRightRotate, opacity: 0.9 }}
+              transition={{ type: "spring", damping: 26, stiffness: 240 }}
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
-                y: nextY,
-                rotate: nextRotate,
-                opacity: nextOpacity,
                 zIndex: 2,
               }}
               className="absolute inset-0 flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none overflow-hidden"
