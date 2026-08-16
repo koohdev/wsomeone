@@ -281,7 +281,7 @@ export function CardStack({
                 times: [0, 0.1, 0.22, 0.35, 0.48, 0.62, 0.75, 0.85, 0.94, 1],
                 ease: "easeInOut",
               }}
-              style={{ ...getCardStyle(false), zIndex: 2 }}
+              style={{ ...getCardStyle(false), boxShadow: "none", zIndex: 2 }}
               className="absolute inset-0 rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden"
             >
               <div
@@ -315,7 +315,7 @@ export function CardStack({
                 times: [0, 0.1, 0.22, 0.35, 0.48, 0.62, 0.75, 0.85, 0.94, 1],
                 ease: "easeInOut",
               }}
-              style={{ ...getCardStyle(false), zIndex: 3 }}
+              style={{ ...getCardStyle(false), boxShadow: "none", zIndex: 3 }}
               className="absolute inset-0 rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden"
             >
               <div
@@ -349,7 +349,7 @@ export function CardStack({
                 times: [0, 0.1, 0.22, 0.35, 0.48, 0.62, 0.75, 0.85, 0.94, 1],
                 ease: "easeInOut",
               }}
-              style={{ ...getCardStyle(false), zIndex: 4 }}
+              style={{ ...getCardStyle(false), boxShadow: "none", zIndex: 4 }}
               className="absolute inset-0 rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden"
             >
               <div
@@ -383,7 +383,7 @@ export function CardStack({
                 times: [0, 0.1, 0.22, 0.35, 0.48, 0.62, 0.75, 0.85, 0.94, 1],
                 ease: "easeInOut",
               }}
-              style={{ ...getCardStyle(false), zIndex: 5 }}
+              style={{ ...getCardStyle(false), boxShadow: "none", zIndex: 5 }}
               className="absolute inset-0 rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden"
             >
               <div
@@ -417,7 +417,7 @@ export function CardStack({
                 times: [0, 0.1, 0.22, 0.35, 0.48, 0.62, 0.75, 0.85, 0.94, 1],
                 ease: "easeInOut",
               }}
-              style={{ ...getCardStyle(false), zIndex: 6 }}
+              style={{ ...getCardStyle(false), boxShadow: "none", zIndex: 6 }}
               className="absolute inset-0 rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden"
             >
               <div
@@ -451,7 +451,7 @@ export function CardStack({
                 times: [0, 0.1, 0.22, 0.35, 0.48, 0.62, 0.75, 0.85, 0.94, 1],
                 ease: "easeInOut",
               }}
-              style={{ ...getCardStyle(false), zIndex: 7 }}
+              style={{ ...getCardStyle(false), boxShadow: "none", zIndex: 7 }}
               className="absolute inset-0 rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden"
             >
               <div
