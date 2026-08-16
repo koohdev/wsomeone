@@ -69,7 +69,6 @@ export function CardStack({
   const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
 
   // Dynamic transforms for Layer 2 (middle card) as top card is dragged
-  const nextScale = useTransform(x, [-250, 0, 250], [1, 0.96, 1]);
   const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
   const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
   const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
@@ -435,7 +434,7 @@ export function CardStack({
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 will-change-transform overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                transform: `translateY(10px) scale(0.94) rotate(${stackLeftRotate}deg)`,
+                transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
                 zIndex: 1,
               }}
             />
@@ -448,7 +447,6 @@ export function CardStack({
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
-                scale: nextScale,
                 y: nextY,
                 rotate: nextRotate,
                 opacity: nextOpacity,
@@ -544,9 +542,6 @@ export function CardStack({
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
-              initial={{ scale: 0.96, y: 6 }}
-              animate={{ scale: 1, y: 0 }}
-              transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
               drag={isShuffling ? false : "x"}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.85}
