@@ -44,6 +44,7 @@ export function CardStack({
   triggerHaptic,
 }: CardStackProps) {
   const [isAnimating, setIsAnimating] = useState(false);
+  const [direction, setDirection] = useState<"forward" | "reverse">("forward");
   const [returningCard, setReturningCard] = useState<ReturningCard | null>(null);
 
   const isEnd = currentIndex >= cards.length;
@@ -93,6 +94,7 @@ export function CardStack({
       info.velocity.x > rightVelocityThreshold
     ) {
       // Forward / Swipe Right -> Fly currentCard off-screen FIRST, then advance so next/third cards NEVER change text while visible!
+      setDirection("forward");
       setIsAnimating(true);
       triggerHaptic("snap");
 
@@ -107,6 +109,7 @@ export function CardStack({
     } else if (info.offset.x < -leftThreshold) {
       // Reverse / Swipe Left -> Return previous card over top without changing currentCard's text!
       if (currentIndex > 0 && !returningCard) {
+        setDirection("reverse");
         const prevCard = cards[currentIndex - 1];
         triggerHaptic("slide-reverse");
 
@@ -422,11 +425,15 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
-          {/* Layer 3: Bottom card peeking left, smoothly emerges from underneath */}
+          {/* Layer 3: Bottom card peeking left */}
           {thirdCard && (
             <motion.div
               key={`third-${thirdCard.id}`}
-              initial={{ rotate: stackLeftRotate, y: 14, opacity: 0 }}
+              initial={
+                direction === "forward"
+                  ? { rotate: stackLeftRotate, y: 14, opacity: 0 }
+                  : { rotate: stackRightRotate, y: 6, opacity: 0.9 }
+              }
               animate={{ rotate: stackLeftRotate, y: 10, opacity: 0.5 }}
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
               aria-hidden="true"
@@ -438,11 +445,15 @@ export function CardStack({
             />
           )}
 
-          {/* Layer 2: Middle card peeking right, smoothly transitions from Layer 3 position */}
+          {/* Layer 2: Middle card peeking right */}
           {nextCard && (
             <motion.div
               key={`next-${nextCard.id}`}
-              initial={{ rotate: stackLeftRotate, y: 10, opacity: 0.5 }}
+              initial={
+                direction === "forward"
+                  ? { rotate: stackLeftRotate, y: 10, opacity: 0.5 }
+                  : { rotate: 0, y: 0, opacity: 1 }
+              }
               animate={{ rotate: stackRightRotate, y: 6, opacity: 0.9 }}
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
               aria-hidden="true"
@@ -540,7 +551,11 @@ export function CardStack({
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
-              initial={{ rotate: stackRightRotate, y: 6 }}
+              initial={
+                direction === "forward"
+                  ? { rotate: stackRightRotate, y: 6 }
+                  : { rotate: 0, y: 0 }
+              }
               animate={{ rotate: 0, y: 0 }}
               transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
               drag={isShuffling ? false : "x"}
