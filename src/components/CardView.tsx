@@ -121,7 +121,7 @@ export function CardView({
     setIsShuffling(true);
     triggerHaptic('shuffle');
 
-    // 1. Update the card sequence at 1.5s midway through the 3.0s riffle
+    // 1. Update the card sequence midway through the riffle at 1.5s
     const t1 = setTimeout(() => {
       const coverCard = deck.cards[0];
       const questionCards = deck.cards.slice(1);
@@ -131,12 +131,12 @@ export function CardView({
       setCurrentIndex(0);
     }, 1500);
 
-    // 2. Tactile thud at 2.8s when the top cover drops down into the dead center of the tabletop
+    // 2. Tactile thud at 2.8s when the top cover snaps down onto the squared deck
     const t2 = setTimeout(() => {
       triggerHaptic('medium');
     }, 2800);
 
-    // 3. Complete shuffle choreography at 3.0s matching the audio duration
+    // 3. Complete shuffle choreography at 3.0s exactly matching audio duration
     const t3 = setTimeout(() => {
       setIsShuffling(false);
     }, 3000);
