@@ -52,6 +52,8 @@ export function CardStack({
     currentIndex + 1 < cards.length ? cards[currentIndex + 1] : null;
   const thirdCard =
     currentIndex + 2 < cards.length ? cards[currentIndex + 2] : null;
+  const fourthCard =
+    currentIndex + 3 < cards.length ? cards[currentIndex + 3] : null;
 
   // Selected sample cards for visual shuffle riffle
   const shuffleCard1 = cards[1] || cards[0];
@@ -61,7 +63,7 @@ export function CardStack({
   const shuffleCover = cards[0];
 
   // Fixed, consistent double-sided fanned stack rotations
-  const stackLeftRotate = -3.2; // Layer 3 peeking left
+  const stackLeftRotate = -3.2; // Layer 3 & 4 peeking left
   const stackRightRotate = 2.8; // Layer 2 peeking right
 
   // Motion values for the top active card
@@ -81,6 +83,16 @@ export function CardStack({
     x,
     [-250, 0, 250],
     [stackRightRotate, stackLeftRotate, stackRightRotate],
+  );
+
+  // Dynamic transforms for Layer 4 (incoming base card) as top card is dragged
+  // Smoothly rises from hidden state (y:14, rot:left, op:0) into Layer 3 resting state (y:10, rot:left, op:0.5)
+  const fourthY = useTransform(x, [-250, 0, 250], [10, 14, 10]);
+  const fourthOpacity = useTransform(x, [-250, 0, 250], [0.5, 0, 0.5]);
+  const fourthRotate = useTransform(
+    x,
+    [-250, 0, 250],
+    [stackLeftRotate, stackLeftRotate, stackLeftRotate],
   );
 
   const getExitDistance = () => {
@@ -437,6 +449,22 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
+          {/* Layer 4: Base card smoothly fading in from opacity 0 to Layer 3 position on swipe */}
+          {fourthCard && (
+            <motion.div
+              key={`fourth-${fourthCard.id}`}
+              aria-hidden="true"
+              className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
+              style={{
+                ...getCardStyle(fourthCard.isCover),
+                y: fourthY,
+                rotate: fourthRotate,
+                opacity: fourthOpacity,
+                zIndex: 0,
+              }}
+            />
+          )}
+
           {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly transitioning to Layer 2 position on swipe */}
           {thirdCard && (
             <motion.div
