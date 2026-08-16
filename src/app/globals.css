@@ -28,11 +28,6 @@
   }
 }
 
-/* Swup Transition Fade & Blur System */
-.transition-fade {
-  transition: opacity 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), filter 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
 /* Phone Landscape Mode Only (small vertical height <= 500px on landscape orientation) */
 @media (orientation: landscape) and (max-height: 500px) {
   .phone-landscape-only {

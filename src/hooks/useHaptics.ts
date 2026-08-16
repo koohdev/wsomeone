@@ -3,7 +3,7 @@
 import { useCallback, useRef } from 'react';
 import { soundManager } from '@/lib/sound';
 
-export type HapticType = 'light' | 'medium' | 'snap' | 'select' | 'shuffle' | 'success';
+export type HapticType = 'light' | 'medium' | 'snap' | 'slide-reverse' | 'select' | 'shuffle' | 'success';
 
 export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: boolean } = {}) {
   const { soundEnabled = true, hapticsEnabled = true } = options;
@@ -30,6 +30,8 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
         try {
           if (pattern === 'light' || pattern === 'select') {
             navigator.vibrate(8);
+          } else if (pattern === 'slide-reverse') {
+            navigator.vibrate([10, 8]);
           } else if (pattern === 'medium') {
             navigator.vibrate(16);
           } else if (pattern === 'snap') {
@@ -53,6 +55,9 @@ export function useHaptics(options: { soundEnabled?: boolean; hapticsEnabled?: b
           } else if (pattern === 'snap') {
             // Card swipe slide audio effect
             if (soundManager) soundManager.play('slide', 0.85);
+          } else if (pattern === 'slide-reverse') {
+            // Reversed card swipe slide audio effect
+            if (soundManager) soundManager.play('slide-reverse', 0.85);
           } else {
             // Original tactile audio tone for card clicks & selection buttons
             const ctx = getAudioContext();

@@ -105,7 +105,7 @@ export function CardView({
     setIsShuffling(true);
     triggerHaptic('shuffle');
 
-    // Update the card sequence midway through the 3s riffle fan
+    // Update the card sequence at 1.0s while cards are riffled
     setTimeout(() => {
       const coverCard = deck.cards[0];
       const questionCards = deck.cards.slice(1);
@@ -113,16 +113,16 @@ export function CardView({
       const newCards = [coverCard, ...shuffledQuestions];
       setCards(newCards);
       setCurrentIndex(0);
-    }, 1500);
+    }, 1000);
 
-    // Tactile thud when the deck lands / drops onto the tabletop
+    // Tactile thud at 1.8s when the top cover drops down into the dead center of the tabletop
     setTimeout(() => {
       triggerHaptic('medium');
-    }, 2820);
+    }, 1800);
 
     setTimeout(() => {
       setIsShuffling(false);
-    }, 3000);
+    }, 2200);
   }, [deck.cards, triggerHaptic]);
 
   const handleRestartDeck = useCallback(() => {
@@ -134,15 +134,15 @@ export function CardView({
       if (onResetProgress) {
         onResetProgress(deck.id);
       }
-    }, 1500);
+    }, 1000);
 
     setTimeout(() => {
       triggerHaptic('medium');
-    }, 2820);
+    }, 1800);
 
     setTimeout(() => {
       setIsShuffling(false);
-    }, 3000);
+    }, 2200);
   }, [deck.id, onResetProgress, triggerHaptic]);
 
   const handleNext = useCallback(() => {
@@ -154,7 +154,7 @@ export function CardView({
   const handlePrev = useCallback(() => {
     if (currentIndex > 0 && !isShuffling) {
       setCurrentIndex((prev) => prev - 1);
-      triggerHaptic('light');
+      triggerHaptic('slide-reverse');
     }
   }, [currentIndex, isShuffling, triggerHaptic]);
 
@@ -185,9 +185,9 @@ export function CardView({
   const displayIndex = Math.min(currentIndex + 1, totalCards);
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
+    <div className="relative flex h-[100dvh] max-h-[100dvh] w-full flex-col justify-between overflow-hidden bg-[#EDEDEF] text-[#C10016] select-none font-sans">
       {/* Top Bar: Centered Counter with NumberFlow Animation */}
-      <header className="relative z-30 flex items-center justify-center px-6 pt-5 sm:pt-7 w-full max-w-xl mx-auto">
+      <header className="relative z-30 flex shrink-0 items-center justify-center px-6 pt-[max(1rem,env(safe-area-inset-top,16px))] sm:pt-7 w-full max-w-xl mx-auto">
         <div className="flex items-center text-[#C10016] font-mono text-sm sm:text-base font-semibold tracking-wider">
           <NumberFlow
             value={displayIndex}
@@ -200,7 +200,7 @@ export function CardView({
       </header>
 
       {/* Center Card Stage */}
-      <main className="relative flex flex-1 items-center justify-center py-4 sm:py-6">
+      <main className="relative flex flex-1 items-center justify-center py-2 sm:py-6 overflow-hidden min-h-0">
         <CardStack
           cards={cards}
           currentIndex={currentIndex}
@@ -216,7 +216,7 @@ export function CardView({
       </main>
 
       {/* 1. Standard Bottom Menu Pill (Desktop, Tablets & Mobile Portrait; Hidden ONLY on Phone Landscape) */}
-      <footer className="relative z-30 flex hide-on-phone-landscape flex-col items-center justify-center pb-8 pt-2">
+      <footer className="relative z-30 flex shrink-0 hide-on-phone-landscape flex-col items-center justify-center pb-[max(1.25rem,env(safe-area-inset-bottom,20px))] pt-1">
         <button
           onClick={() => {
             triggerHaptic('select');

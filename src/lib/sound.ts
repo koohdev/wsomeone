@@ -38,6 +38,27 @@ class SoundManager {
     }
   }
 
+  private createReversedBuffer(originalBuffer: AudioBuffer): AudioBuffer | null {
+    if (!this.ctx) return null;
+    try {
+      const reversed = this.ctx.createBuffer(
+        originalBuffer.numberOfChannels,
+        originalBuffer.length,
+        originalBuffer.sampleRate
+      );
+      for (let c = 0; c < originalBuffer.numberOfChannels; c++) {
+        const srcData = originalBuffer.getChannelData(c);
+        const destData = reversed.getChannelData(c);
+        for (let i = 0, j = srcData.length - 1; i < srcData.length; i++, j--) {
+          destData[i] = srcData[j];
+        }
+      }
+      return reversed;
+    } catch {
+      return null;
+    }
+  }
+
   public preload() {
     if (typeof window === 'undefined' || this.isLoading) return;
     this.isLoading = true;
@@ -61,6 +82,14 @@ class SoundManager {
           if (this.ctx) {
             const decoded = await this.ctx.decodeAudioData(arrayBuffer);
             this.buffers.set(key, decoded);
+
+            // Automatically generate reversed slide audio buffer
+            if (key === 'slide') {
+              const reversed = this.createReversedBuffer(decoded);
+              if (reversed) {
+                this.buffers.set('slide-reverse', reversed);
+              }
+            }
           }
         })
         .catch(() => {
@@ -69,7 +98,7 @@ class SoundManager {
     });
   }
 
-  public play(key: 'slide' | 'shuffle', volume = 0.8) {
+  public play(key: 'slide' | 'slide-reverse' | 'shuffle', volume = 0.8) {
     if (typeof window === 'undefined') return;
     this.init();
 
@@ -79,19 +108,33 @@ class SoundManager {
       this.ctx.resume().catch(() => {});
     }
 
+    // Lazy create reversed buffer if slide exists but slide-reverse doesn't
+    if (key === 'slide-reverse' && !this.buffers.has('slide-reverse')) {
+      const slideBuf = this.buffers.get('slide');
+      if (slideBuf) {
+        const rev = this.createReversedBuffer(slideBuf);
+        if (rev) this.buffers.set('slide-reverse', rev);
+      }
+    }
+
     const buffer = this.buffers.get(key);
     if (buffer) {
       try {
         const source = this.ctx.createBufferSource();
         source.buffer = buffer;
 
-        // Slight natural pitch variation for tactile realism
+        // Realistic pitch variation and animation timing match
         if (key === 'slide') {
           source.playbackRate.value = 0.96 + Math.random() * 0.08;
+        } else if (key === 'slide-reverse') {
+          // Matched to reverse spring animation speed
+          source.playbackRate.value = 1.02 + Math.random() * 0.06;
         }
 
         const gainNode = this.ctx.createGain();
-        gainNode.gain.setValueAtTime(Math.min(1, Math.max(0, volume)), this.ctx.currentTime);
+        const now = this.ctx.currentTime;
+        const vol = Math.min(1, Math.max(0, volume));
+        gainNode.gain.setValueAtTime(vol, now);
 
         source.connect(gainNode);
         gainNode.connect(this.ctx.destination);
@@ -101,9 +144,9 @@ class SoundManager {
         // Playback catch
       }
     } else {
-      // Direct Audio element fallback if buffer not yet decoded
+      // Direct Audio fallback
       try {
-        const audio = new Audio(key === 'slide' ? '/sounds/card-slide.mp3' : '/sounds/card-shuffle.mp3');
+        const audio = new Audio(key === 'shuffle' ? '/sounds/card-shuffle.mp3' : '/sounds/card-slide.mp3');
         audio.volume = volume;
         audio.play().catch(() => {});
       } catch {

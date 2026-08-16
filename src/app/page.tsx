@@ -8,9 +8,9 @@ import { TopicMenu } from '@/components/TopicMenu';
 import { CardView } from '@/components/CardView';
 import { useDeckProgress } from '@/hooks/useDeckProgress';
 
-const SWUP_TRANSITION = {
-  duration: 0.45,
-  ease: [0.25, 0.46, 0.45, 0.94] as const,
+const VIEW_TRANSITION = {
+  duration: 0.28,
+  ease: [0.22, 1, 0.36, 1] as const,
 };
 
 export default function Home() {
@@ -25,17 +25,16 @@ export default function Home() {
   const activeDeck = DECKS.find((d) => d.id === selectedDeckId) || null;
 
   return (
-    <main className="min-h-screen w-full bg-[#EDEDEF] overflow-x-hidden">
+    <main className="min-h-[100dvh] w-full bg-[#EDEDEF] overflow-x-hidden">
       <AnimatePresence mode="wait" initial={false}>
         {activeDeck ? (
           <motion.div
-            key={activeDeck.id}
-            id="swup"
-            className="transition-fade w-full min-h-screen will-change-transform"
-            initial={{ opacity: 0, filter: 'blur(7px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, filter: 'blur(7px)' }}
-            transition={SWUP_TRANSITION}
+            key="card-view"
+            className="w-full h-[100dvh] max-h-[100dvh] overflow-hidden will-change-transform"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={VIEW_TRANSITION}
           >
             <CardView
               deck={activeDeck}
@@ -49,13 +48,12 @@ export default function Home() {
           </motion.div>
         ) : (
           <motion.div
-            key="landing"
-            id="swup"
-            className="transition-fade w-full min-h-screen will-change-transform"
-            initial={{ opacity: 0, filter: 'blur(7px)' }}
-            animate={{ opacity: 1, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, filter: 'blur(7px)' }}
-            transition={SWUP_TRANSITION}
+            key="topic-menu"
+            className="w-full min-h-[100dvh] will-change-transform"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={VIEW_TRANSITION}
           >
             <TopicMenu
               decks={DECKS}
