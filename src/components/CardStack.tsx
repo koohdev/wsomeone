@@ -431,7 +431,7 @@ export function CardStack({
           {thirdCard && (
             <div
               aria-hidden="true"
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 will-change-transform overflow-hidden"
+              className="absolute inset-0 rounded-[32px] border pointer-events-none opacity-50 overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
                 transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
@@ -452,7 +452,7 @@ export function CardStack({
                 opacity: nextOpacity,
                 zIndex: 2,
               }}
-              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none will-change-transform overflow-hidden"
+              className="absolute inset-0 flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none overflow-hidden"
             >
               {/* Paper Fiber Grain & Dust Fleck Layer */}
               <div
@@ -552,7 +552,7 @@ export function CardStack({
                 rotate,
                 zIndex: 10,
               }}
-              className="relative aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden"
+              className="relative aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border overflow-hidden"
             >
               {/* Paper Fiber Grain & Dust Fleck Layer */}
               <div
@@ -651,7 +651,7 @@ export function CardStack({
                 zIndex: 25,
                 pointerEvents: "none",
               }}
-              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden shadow-xl"
+              className="absolute inset-0 flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border overflow-hidden shadow-xl"
             >
               <div
                 aria-hidden="true"
