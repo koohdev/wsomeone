@@ -154,9 +154,8 @@ export function CardView({
   const handlePrev = useCallback(() => {
     if (currentIndex > 0 && !isShuffling) {
       setCurrentIndex((prev) => prev - 1);
-      triggerHaptic('slide-reverse');
     }
-  }, [currentIndex, isShuffling, triggerHaptic]);
+  }, [currentIndex, isShuffling]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -170,6 +169,7 @@ export function CardView({
         handleNext();
       } else if (e.key === 'ArrowLeft' || e.key === 'Backspace') {
         e.preventDefault();
+        triggerHaptic('slide-reverse');
         handlePrev();
       } else if (e.key === 'Escape') {
         e.preventDefault();
@@ -179,7 +179,7 @@ export function CardView({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleNext, handlePrev, isSheetOpen]);
+  }, [handleNext, handlePrev, isSheetOpen, triggerHaptic]);
 
   const totalCards = cards.length;
   const displayIndex = Math.min(currentIndex + 1, totalCards);

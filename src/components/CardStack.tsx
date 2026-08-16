@@ -23,10 +23,9 @@ interface CardStackProps {
   triggerHaptic: (pattern?: "light" | "snap" | "slide-reverse" | "shuffle" | "select") => void;
 }
 
-interface ExitingCard {
+interface ReturningCard {
   id: string;
   card: Card;
-  startX: number;
 }
 
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
@@ -44,7 +43,8 @@ export function CardStack({
   editionText = "WSOMEONE",
   triggerHaptic,
 }: CardStackProps) {
-  const [exitingCards, setExitingCards] = useState<ExitingCard[]>([]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [returningCard, setReturningCard] = useState<ReturningCard | null>(null);
 
   const isEnd = currentIndex >= cards.length;
   const currentCard = !isEnd ? cards[currentIndex] : null;
@@ -81,19 +81,14 @@ export function CardStack({
     return 800;
   };
 
-  const removeExitingCard = (id: string) => {
-    setExitingCards((prev) => prev.filter((c) => c.id !== id));
-  };
-
   const handleDragEnd = async (
     _e: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
   ) => {
-    if (isShuffling) return;
+    if (isShuffling || isAnimating || returningCard) return;
 
     const rightThreshold = 65;
     const rightVelocityThreshold = 220;
-    // edited by me to be 0.2, so dont touch it
     const leftThreshold =
       typeof window !== "undefined" ? window.innerWidth * 0.2 : 120;
 
@@ -101,32 +96,35 @@ export function CardStack({
       info.offset.x > rightThreshold ||
       info.velocity.x > rightVelocityThreshold
     ) {
-      // Forward / Swipe Right -> Promote next card IMMEDIATELY with ZERO delay
+      // Forward / Swipe Right -> Fly currentCard off-screen FIRST, then advance so next/third cards NEVER change text while visible!
+      setIsAnimating(true);
       triggerHaptic("snap");
-      const dismissed = currentCard;
-      const currentX = x.get();
 
-      // Advance immediately so the next card is instantly interactive!
+      await animate(x, getExitDistance(), {
+        duration: 0.22,
+        ease: [0.32, 0.72, 0, 1],
+      });
+
       onNext();
       x.set(0);
-
-      if (dismissed) {
-        const exitId = `${dismissed.id}-${Date.now()}`;
-        setExitingCards((prev) => [
-          ...prev,
-          { id: exitId, card: dismissed, startX: currentX },
-        ]);
-      }
+      setIsAnimating(false);
     } else if (info.offset.x < -leftThreshold) {
-      // Reverse / Swipe Left -> Only register if swiped leftThreshold to the left
-      if (currentIndex > 0) {
+      // Reverse / Swipe Left -> Return previous card over top without changing currentCard's text!
+      if (currentIndex > 0 && !returningCard) {
+        const prevCard = cards[currentIndex - 1];
         triggerHaptic("slide-reverse");
-        onPrev();
-        x.set(380);
+
+        // 1. Current card snaps cleanly back to center without changing text
         animate(x, 0, {
           type: "spring",
           damping: 24,
-          stiffness: 180,
+          stiffness: 240,
+        });
+
+        // 2. Previous card swooshes in from the right onto top of the stack
+        setReturningCard({
+          id: `${prevCard.id}-${Date.now()}`,
+          card: prevCard,
         });
       } else {
         triggerHaptic("light");
@@ -544,7 +542,7 @@ export function CardStack({
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
-              drag={isShuffling ? false : "x"}
+              drag={isShuffling || returningCard ? false : "x"}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.85}
               onDragEnd={handleDragEnd}
@@ -640,25 +638,32 @@ export function CardStack({
             </motion.div>
           )}
 
-          {/* Independently Exiting Discarded Cards */}
-          {exitingCards.map(({ id, card, startX }) => (
+          {/* Returning Card flying back in from the right onto the stack */}
+          {returningCard && (
             <motion.div
-              key={id}
-              initial={{ x: startX, rotate: (startX / 600) * 14, opacity: 1 }}
-              animate={{ x: getExitDistance(), rotate: 16, opacity: 0.85 }}
-              transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
-              onAnimationComplete={() => removeExitingCard(id)}
+              key={returningCard.id}
+              initial={{ x: getExitDistance(), rotate: 16, opacity: 0.95 }}
+              animate={{ x: 0, rotate: 0, opacity: 1 }}
+              transition={{
+                type: "spring",
+                damping: 24,
+                stiffness: 220,
+              }}
+              onAnimationComplete={() => {
+                onPrev();
+                setReturningCard(null);
+              }}
               style={{
-                ...getCardStyle(card.isCover),
-                zIndex: 25,
+                ...getCardStyle(returningCard.card.isCover),
+                zIndex: 30,
                 pointerEvents: "none",
               }}
-              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden shadow-xl"
+              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden shadow-2xl"
             >
               <div
                 aria-hidden="true"
                 className={`absolute inset-0 pointer-events-none rounded-[32px] ${
-                  card.isCover
+                  returningCard.card.isCover
                     ? "opacity-30 mix-blend-overlay"
                     : "opacity-45 mix-blend-multiply"
                 }`}
@@ -670,43 +675,48 @@ export function CardStack({
               <div
                 aria-hidden="true"
                 className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
-                  card.isCover
+                  returningCard.card.isCover
                     ? "bg-gradient-to-r from-transparent via-white/35 to-transparent"
                     : "bg-gradient-to-r from-transparent via-white/80 to-transparent"
                 }`}
               />
               <div
                 className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
-                  card.isCover
+                  returningCard.card.isCover
                     ? "bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20"
                     : "bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5"
                 }`}
               />
               <div />
-              {card.isCover ? (
+              {returningCard.card.isCover ? (
                 <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
                   <h2 className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight">
-                    {card.coverTitle || card.text}
+                    {returningCard.card.coverTitle || returningCard.card.text}
                   </h2>
+                  {returningCard.card.coverTagline && (
+                    <p className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
+                      {returningCard.card.coverTagline}
+                    </p>
+                  )}
                 </div>
               ) : (
                 <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
                   <p className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance">
-                    {card.text}
+                    {returningCard.card.text}
                   </p>
                 </div>
               )}
               <div
                 className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
-                  card.isCover ? "text-white/80" : "text-[#C10016]"
+                  returningCard.card.isCover ? "text-white/80" : "text-[#C10016]"
                 }`}
               >
-                {card.isCover
-                  ? card.coverPrompt || "READY TO START? SWIPE RIGHT →"
-                  : card.edition || editionText}
+                {returningCard.card.isCover
+                  ? returningCard.card.coverPrompt || "READY TO START? SWIPE RIGHT →"
+                  : returningCard.card.edition || editionText}
               </div>
             </motion.div>
-          ))}
+          )}
         </div>
       )}
     </div>
