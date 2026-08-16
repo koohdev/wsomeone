@@ -23,9 +23,10 @@ interface CardStackProps {
   triggerHaptic: (pattern?: "light" | "snap" | "slide-reverse" | "shuffle" | "select") => void;
 }
 
-interface ReturningCard {
+interface ExitingCard {
   id: string;
   card: Card;
+  startX: number;
 }
 
 // 350 GSM Heavy Uncoated Cotton Paper Texture (Embedded SVG Noise + Dust & Fiber Flecks)
@@ -43,8 +44,7 @@ export function CardStack({
   editionText = "WSOMEONE",
   triggerHaptic,
 }: CardStackProps) {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [returningCard, setReturningCard] = useState<ReturningCard | null>(null);
+  const [exitingCards, setExitingCards] = useState<ExitingCard[]>([]);
 
   const isEnd = currentIndex >= cards.length;
   const currentCard = !isEnd ? cards[currentIndex] : null;
@@ -69,7 +69,7 @@ export function CardStack({
   const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
 
   // Dynamic transforms for Layer 2 (middle card) as top card is dragged
-  // NO scale transform — all cards are the same fixed size to prevent resize flash
+  const nextScale = useTransform(x, [-250, 0, 250], [1, 0.96, 1]);
   const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
   const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
   const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
@@ -81,52 +81,52 @@ export function CardStack({
     return 800;
   };
 
+  const removeExitingCard = (id: string) => {
+    setExitingCards((prev) => prev.filter((c) => c.id !== id));
+  };
+
   const handleDragEnd = async (
     _e: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo,
   ) => {
-    if (isShuffling || isAnimating || returningCard) return;
+    if (isShuffling) return;
 
     const rightThreshold = 65;
     const rightVelocityThreshold = 220;
+    // edited by me to be 0.2, so dont touch it
     const leftThreshold =
-      typeof window !== "undefined"
-        ? Math.min(120, Math.max(65, window.innerWidth * 0.2))
-        : 100;
+      typeof window !== "undefined" ? window.innerWidth * 0.2 : 120;
 
     if (
       info.offset.x > rightThreshold ||
       info.velocity.x > rightVelocityThreshold
     ) {
-      // Forward / Swipe Right -> Fly currentCard off-screen FIRST, then advance so next/third cards NEVER change text while visible!
-      setIsAnimating(true);
+      // Forward / Swipe Right -> Promote next card IMMEDIATELY with ZERO delay
       triggerHaptic("snap");
+      const dismissed = currentCard;
+      const currentX = x.get();
 
-      await animate(x, getExitDistance(), {
-        duration: 0.22,
-        ease: [0.32, 0.72, 0, 1],
-      });
-
+      // Advance immediately so the next card is instantly interactive!
       onNext();
       x.set(0);
-      setIsAnimating(false);
-    } else if (info.offset.x < -leftThreshold) {
-      // Reverse / Swipe Left -> Return previous card over top without changing currentCard's text!
-      if (currentIndex > 0 && !returningCard) {
-        const prevCard = cards[currentIndex - 1];
-        triggerHaptic("slide-reverse");
 
-        // 1. Current card snaps cleanly back to center without changing text
+      if (dismissed) {
+        const exitId = `${dismissed.id}-${Date.now()}`;
+        setExitingCards((prev) => [
+          ...prev,
+          { id: exitId, card: dismissed, startX: currentX },
+        ]);
+      }
+    } else if (info.offset.x < -leftThreshold) {
+      // Reverse / Swipe Left -> Only register if swiped leftThreshold to the left
+      if (currentIndex > 0) {
+        triggerHaptic("slide-reverse");
+        onPrev();
+        x.set(380);
         animate(x, 0, {
           type: "spring",
           damping: 24,
-          stiffness: 240,
-        });
-
-        // 2. Previous card swooshes in from the right onto top of the stack
-        setReturningCard({
-          id: `${prevCard.id}-${Date.now()}`,
-          card: prevCard,
+          stiffness: 180,
         });
       } else {
         triggerHaptic("light");
@@ -183,7 +183,7 @@ export function CardStack({
             }
           }}
           style={getCardStyle(false)}
-          className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-center rounded-[32px] p-6 sm:p-8 landscape:p-4 text-center border select-none active:scale-[0.99] transition-transform overflow-hidden"
+          className="relative flex aspect-[1.38/1] w-full cursor-pointer flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 text-center border select-none active:scale-[0.99] transition-transform overflow-hidden"
         >
           {/* Paper Fiber Grain & Dust Fleck Layer */}
           <div
@@ -204,12 +204,14 @@ export function CardStack({
           {/* Frosted Matte Scotch Tape */}
           <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/70 via-white/55 to-white/40 backdrop-blur-[3px] border border-black/5 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
 
+          <div />
+
           <div className="relative z-10 px-4">
             <h2
               className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm font-bold tracking-tight uppercase leading-snug"
               style={{ textShadow: "0 0.4px 0.4px rgba(193, 0, 22, 0.15)" }}
             >
-              YOU’VE REACHED THE END.
+              YOUΓÇÖVE REACHED THE END.
             </h2>
             <p className="text-[#C10016]/70 text-xs sm:text-sm landscape:text-[11px] font-medium mt-1">
               Tap anywhere to open topics menu or reshuffle.
@@ -217,7 +219,7 @@ export function CardStack({
           </div>
 
           <div
-            className="absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs font-bold uppercase tracking-tight text-[#C10016]"
+            className="relative z-10 text-[11px] sm:text-xs font-bold uppercase tracking-tight text-[#C10016]"
             style={{ textShadow: "0 0.4px 0.4px rgba(193, 0, 22, 0.15)" }}
           >
             {editionText}
@@ -229,25 +231,25 @@ export function CardStack({
 
   return (
     <div className="relative flex w-full max-w-[360px] sm:max-w-[440px] md:max-w-[480px] items-center justify-center px-4 select-none touch-none">
-      {/* SHUFFLE CHOREOGRAPHY: 3.0s Riffle + Center Hover Lift + Physical Center Tabletop Drop */}
+      {/* SHUFFLE CHOREOGRAPHY: Crisp Riffle + Center Hover Lift + Physical Center Tabletop Drop */}
       {isShuffling ? (
         <div className="relative w-full aspect-[1.38/1] pointer-events-none">
           {/* 1. Left Deck Base Card */}
           {shuffleCard1 && (
             <motion.div
               animate={{
-                x: [0, -48, -48, -24, 0, 0, 0],
-                y: [0, 6, 6, 2, 0, 0, 0],
-                rotate: [0, -7, -7, -3, 0, 0, 0],
-                scale: [1, 0.98, 0.98, 1, 1, 1, 1],
+                x: [0, -48, -48, -24, 0, 0],
+                y: [0, 6, 6, 2, 0, 0],
+                rotate: [0, -7, -7, -3, 0, 0],
+                scale: [1, 0.98, 0.98, 1, 1, 1],
               }}
               transition={{
-                duration: 3.0,
-                times: [0, 0.2, 0.55, 0.75, 0.88, 0.95, 1],
+                duration: 2.2,
+                times: [0, 0.25, 0.5, 0.7, 0.82, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 1 }}
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-center text-center border overflow-hidden opacity-85 shadow-lg"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden opacity-85 shadow-lg"
             >
               <div
                 className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
@@ -257,10 +259,11 @@ export function CardStack({
                 }}
               />
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/70 via-white/55 to-white/40 backdrop-blur-[3px] border border-black/5 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
+              <div />
               <p className="relative z-10 text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug line-clamp-3 px-2">
                 {shuffleCard1.text}
               </p>
-              <div className="absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
+              <div className="relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
                 {shuffleCard1.edition || editionText}
               </div>
             </motion.div>
@@ -270,18 +273,18 @@ export function CardStack({
           {shuffleCard2 && (
             <motion.div
               animate={{
-                x: [0, 48, 48, 24, 0, 0, 0],
-                y: [0, 6, 6, 2, 0, 0, 0],
-                rotate: [0, 7, 7, 3, 0, 0, 0],
-                scale: [1, 0.98, 0.98, 1, 1, 1, 1],
+                x: [0, 48, 48, 24, 0, 0],
+                y: [0, 6, 6, 2, 0, 0],
+                rotate: [0, 7, 7, 3, 0, 0],
+                scale: [1, 0.98, 0.98, 1, 1, 1],
               }}
               transition={{
-                duration: 3.0,
-                times: [0, 0.2, 0.55, 0.75, 0.88, 0.95, 1],
+                duration: 2.2,
+                times: [0, 0.25, 0.5, 0.7, 0.82, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 2 }}
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-center text-center border overflow-hidden opacity-85 shadow-lg"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden opacity-85 shadow-lg"
             >
               <div
                 className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
@@ -291,10 +294,11 @@ export function CardStack({
                 }}
               />
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/70 via-white/55 to-white/40 backdrop-blur-[3px] border border-black/5 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
+              <div />
               <p className="relative z-10 text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug line-clamp-3 px-2">
                 {shuffleCard2.text}
               </p>
-              <div className="absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
+              <div className="relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
                 {shuffleCard2.edition || editionText}
               </div>
             </motion.div>
@@ -304,18 +308,18 @@ export function CardStack({
           {shuffleCard3 && (
             <motion.div
               animate={{
-                x: [0, -42, -18, 8, 0, 0, 0],
-                y: [0, -6, 6, -2, 0, 0, 0],
-                rotate: [0, -6, 5, -2, 0, 0, 0],
-                scale: [0.96, 1.01, 0.99, 1, 1, 1, 1],
+                x: [0, -42, -18, 8, 0, 0],
+                y: [0, -6, 6, -2, 0, 0],
+                rotate: [0, -6, 5, -2, 0, 0],
+                scale: [0.96, 1.01, 0.99, 1, 1, 1],
               }}
               transition={{
-                duration: 3.0,
-                times: [0, 0.25, 0.6, 0.78, 0.88, 0.95, 1],
+                duration: 2.2,
+                times: [0, 0.3, 0.55, 0.72, 0.82, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 3 }}
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-center text-center border overflow-hidden shadow-md"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden shadow-md"
             >
               <div
                 className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
@@ -325,10 +329,11 @@ export function CardStack({
                 }}
               />
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/70 via-white/55 to-white/40 backdrop-blur-[3px] border border-black/5 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
+              <div />
               <p className="relative z-10 text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug line-clamp-3 px-2">
                 {shuffleCard3.text}
               </p>
-              <div className="absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
+              <div className="relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
                 {shuffleCard3.edition || editionText}
               </div>
             </motion.div>
@@ -338,18 +343,18 @@ export function CardStack({
           {shuffleCard4 && (
             <motion.div
               animate={{
-                x: [0, 42, 18, -8, 0, 0, 0],
-                y: [0, -6, 6, -2, 0, 0, 0],
-                rotate: [0, 6, -5, 2, 0, 0, 0],
-                scale: [0.96, 1.01, 0.99, 1, 1, 1, 1],
+                x: [0, 42, 18, -8, 0, 0],
+                y: [0, -6, 6, -2, 0, 0],
+                rotate: [0, 6, -5, 2, 0, 0],
+                scale: [0.96, 1.01, 0.99, 1, 1, 1],
               }}
               transition={{
-                duration: 3.0,
-                times: [0, 0.28, 0.65, 0.8, 0.88, 0.95, 1],
+                duration: 2.2,
+                times: [0, 0.35, 0.6, 0.74, 0.82, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(false), zIndex: 4 }}
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-center text-center border overflow-hidden shadow-md"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center border overflow-hidden shadow-md"
             >
               <div
                 className="absolute inset-0 opacity-40 mix-blend-multiply rounded-[32px]"
@@ -359,10 +364,11 @@ export function CardStack({
                 }}
               />
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/70 via-white/55 to-white/40 backdrop-blur-[3px] border border-black/5 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
+              <div />
               <p className="relative z-10 text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug line-clamp-3 px-2">
                 {shuffleCard4.text}
               </p>
-              <div className="absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
+              <div className="relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight text-[#C10016]">
                 {shuffleCard4.edition || editionText}
               </div>
             </motion.div>
@@ -378,12 +384,12 @@ export function CardStack({
                 scale: [1, 1.02, 1.03, 1.06, 1.07, 0.98, 1.01, 1],
               }}
               transition={{
-                duration: 3.0,
-                times: [0, 0.2, 0.45, 0.7, 0.82, 0.93, 0.97, 1],
+                duration: 2.2,
+                times: [0, 0.2, 0.45, 0.65, 0.75, 0.82, 0.9, 1],
                 ease: "easeInOut",
               }}
               style={{ ...getCardStyle(true), zIndex: 10 }}
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-center text-center overflow-hidden shadow-2xl"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 flex flex-col items-center justify-between text-center overflow-hidden shadow-2xl"
             >
               <div
                 className="absolute inset-0 opacity-30 mix-blend-overlay rounded-[32px]"
@@ -394,6 +400,7 @@ export function CardStack({
               />
               <div className="absolute top-0 inset-x-8 h-[2px] bg-gradient-to-r from-transparent via-white/35 to-transparent pointer-events-none" />
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 bg-gradient-to-br from-white/40 via-white/25 to-white/15 backdrop-blur-[3px] border border-white/20 rounded-xs shadow-xs -rotate-1 pointer-events-none" />
+              <div />
               <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
                 <h2
                   className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight"
@@ -411,10 +418,10 @@ export function CardStack({
                 )}
               </div>
               <div
-                className="absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight text-white/80"
+                className="relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight text-white/80"
                 style={{ textShadow: "0 0.5px 1px rgba(0, 0, 0, 0.2)" }}
               >
-                {shuffleCover.coverPrompt || "READY TO START? SWIPE RIGHT →"}
+                {shuffleCover.coverPrompt || "READY TO START? SWIPE RIGHT ΓåÆ"}
               </div>
             </motion.div>
           )}
@@ -425,10 +432,10 @@ export function CardStack({
           {thirdCard && (
             <div
               aria-hidden="true"
-              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 overflow-hidden"
+              className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 will-change-transform overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
+                transform: `translateY(10px) scale(0.94) rotate(${stackLeftRotate}deg)`,
                 zIndex: 1,
               }}
             />
@@ -441,12 +448,13 @@ export function CardStack({
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
+                scale: nextScale,
                 y: nextY,
                 rotate: nextRotate,
                 opacity: nextOpacity,
                 zIndex: 2,
               }}
-              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-center rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none overflow-hidden"
+              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none will-change-transform overflow-hidden"
             >
               {/* Paper Fiber Grain & Dust Fleck Layer */}
               <div
@@ -481,6 +489,8 @@ export function CardStack({
                 }`}
               />
 
+              <div />
+
               {/* Next Card Content */}
               {nextCard.isCover ? (
                 <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
@@ -514,7 +524,7 @@ export function CardStack({
 
               {/* Card Footer */}
               <div
-                className={`absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+                className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
                   nextCard.isCover ? "text-white/80" : "text-[#C10016]"
                 }`}
                 style={{
@@ -524,7 +534,7 @@ export function CardStack({
                 }}
               >
                 {nextCard.isCover
-                  ? nextCard.coverPrompt || "READY TO START? SWIPE RIGHT →"
+                  ? nextCard.coverPrompt || "READY TO START? SWIPE RIGHT ΓåÆ"
                   : nextCard.edition || editionText}
               </div>
             </motion.div>
@@ -534,7 +544,10 @@ export function CardStack({
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
-              drag={isShuffling || returningCard ? false : "x"}
+              initial={{ scale: 0.96, y: 6 }}
+              animate={{ scale: 1, y: 0 }}
+              transition={{ duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
+              drag={isShuffling ? false : "x"}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.85}
               onDragEnd={handleDragEnd}
@@ -544,7 +557,7 @@ export function CardStack({
                 rotate,
                 zIndex: 10,
               }}
-              className="relative aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex flex-col items-center justify-center rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border overflow-hidden"
+              className="relative aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden"
             >
               {/* Paper Fiber Grain & Dust Fleck Layer */}
               <div
@@ -579,6 +592,8 @@ export function CardStack({
                 }`}
               />
 
+              <div />
+
               {/* Question / Cover Content */}
               {currentCard.isCover ? (
                 <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
@@ -612,7 +627,7 @@ export function CardStack({
 
               {/* Card Footer */}
               <div
-                className={`absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+                className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
                   currentCard.isCover ? "text-white/80" : "text-[#C10016]"
                 }`}
                 style={{
@@ -622,38 +637,31 @@ export function CardStack({
                 }}
               >
                 {currentCard.isCover
-                  ? currentCard.coverPrompt || "READY TO START? SWIPE RIGHT →"
+                  ? currentCard.coverPrompt || "READY TO START? SWIPE RIGHT ΓåÆ"
                   : currentCard.edition || editionText}
               </div>
             </motion.div>
           )}
 
-          {/* Returning Card flying back in from the right onto the stack */}
-          {returningCard && (
+          {/* Independently Exiting Discarded Cards */}
+          {exitingCards.map(({ id, card, startX }) => (
             <motion.div
-              key={returningCard.id}
-              initial={{ x: getExitDistance(), rotate: 16, opacity: 0.95 }}
-              animate={{ x: 0, rotate: 0, opacity: 1 }}
-              transition={{
-                type: "spring",
-                damping: 24,
-                stiffness: 220,
-              }}
-              onAnimationComplete={() => {
-                onPrev();
-                setReturningCard(null);
-              }}
+              key={id}
+              initial={{ x: startX, rotate: (startX / 600) * 14, opacity: 1 }}
+              animate={{ x: getExitDistance(), rotate: 16, opacity: 0.85 }}
+              transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
+              onAnimationComplete={() => removeExitingCard(id)}
               style={{
-                ...getCardStyle(returningCard.card.isCover),
-                zIndex: 30,
+                ...getCardStyle(card.isCover),
+                zIndex: 25,
                 pointerEvents: "none",
               }}
-              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-center rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border overflow-hidden shadow-2xl"
+              className="absolute inset-0 aspect-[1.38/1] flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border will-change-transform overflow-hidden shadow-xl"
             >
               <div
                 aria-hidden="true"
                 className={`absolute inset-0 pointer-events-none rounded-[32px] ${
-                  returningCard.card.isCover
+                  card.isCover
                     ? "opacity-30 mix-blend-overlay"
                     : "opacity-45 mix-blend-multiply"
                 }`}
@@ -665,47 +673,43 @@ export function CardStack({
               <div
                 aria-hidden="true"
                 className={`absolute top-0 inset-x-8 h-[2px] pointer-events-none ${
-                  returningCard.card.isCover
+                  card.isCover
                     ? "bg-gradient-to-r from-transparent via-white/35 to-transparent"
                     : "bg-gradient-to-r from-transparent via-white/80 to-transparent"
                 }`}
               />
               <div
                 className={`absolute -top-3.5 left-1/2 -translate-x-1/2 w-24 h-7 backdrop-blur-[3px] rounded-xs shadow-xs -rotate-1 pointer-events-none ${
-                  returningCard.card.isCover
+                  card.isCover
                     ? "bg-gradient-to-br from-white/40 via-white/25 to-white/15 border border-white/20"
                     : "bg-gradient-to-br from-white/70 via-white/55 to-white/40 border border-black/5"
                 }`}
               />
-              {returningCard.card.isCover ? (
+              <div />
+              {card.isCover ? (
                 <div className="relative z-10 my-auto px-4 sm:px-8 landscape:px-2 flex flex-col items-center justify-center text-center">
                   <h2 className="text-xl sm:text-2xl landscape:text-base landscape:sm:text-lg font-black uppercase tracking-tight text-white leading-tight">
-                    {returningCard.card.coverTitle || returningCard.card.text}
+                    {card.coverTitle || card.text}
                   </h2>
-                  {returningCard.card.coverTagline && (
-                    <p className="mt-2 landscape:mt-1 text-xs sm:text-sm landscape:text-[11px] font-semibold uppercase tracking-wide text-white/85 max-w-xs leading-snug">
-                      {returningCard.card.coverTagline}
-                    </p>
-                  )}
                 </div>
               ) : (
                 <div className="relative z-10 my-auto px-2 sm:px-6 landscape:px-2 flex items-center justify-center">
                   <p className="text-[#C10016] text-base sm:text-lg md:text-xl landscape:text-sm landscape:sm:text-base font-bold tracking-tight uppercase leading-snug text-balance">
-                    {returningCard.card.text}
+                    {card.text}
                   </p>
                 </div>
               )}
               <div
-                className={`absolute bottom-6 sm:bottom-8 landscape:bottom-4 landscape:sm:bottom-5 z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
-                  returningCard.card.isCover ? "text-white/80" : "text-[#C10016]"
+                className={`relative z-10 text-[11px] sm:text-xs landscape:text-[10px] font-bold uppercase tracking-tight whitespace-pre-line leading-tight ${
+                  card.isCover ? "text-white/80" : "text-[#C10016]"
                 }`}
               >
-                {returningCard.card.isCover
-                  ? returningCard.card.coverPrompt || "READY TO START? SWIPE RIGHT →"
-                  : returningCard.card.edition || editionText}
+                {card.isCover
+                  ? card.coverPrompt || "READY TO START? SWIPE RIGHT ΓåÆ"
+                  : card.edition || editionText}
               </div>
             </motion.div>
-          )}
+          ))}
         </div>
       )}
     </div>
