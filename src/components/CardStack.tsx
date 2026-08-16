@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   motion,
   useMotionValue,
@@ -68,6 +68,26 @@ export function CardStack({
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
 
+  // Dynamic transforms for Layer 2 (middle card) as top card is dragged
+  // Smoothly straightens from 2.8deg -> 0deg and y: 6 -> 0 as top card flies away
+  const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
+  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
+  const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
+
+  // Dynamic transforms for Layer 3 (bottom card) as top card is dragged
+  const thirdY = useTransform(x, [-250, 0, 250], [6, 10, 6]);
+  const thirdOpacity = useTransform(x, [-250, 0, 250], [0.9, 0.5, 0.9]);
+  const thirdRotate = useTransform(
+    x,
+    [-250, 0, 250],
+    [stackRightRotate, stackLeftRotate, stackRightRotate],
+  );
+
+  // Synchronize motion value reset to post-render commit when currentIndex changes
+  useEffect(() => {
+    x.set(0);
+  }, [currentIndex, x]);
+
   const getExitDistance = () => {
     if (typeof window !== "undefined") {
       return window.innerWidth / 2 + 320;
@@ -102,7 +122,6 @@ export function CardStack({
       });
 
       onNext();
-      x.set(0);
       setIsAnimating(false);
     } else if (info.offset.x < -leftThreshold) {
       // Reverse / Swipe Left -> Return previous card over top without changing currentCard's text!
@@ -422,29 +441,32 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
-          {/* Layer 3: Bottom card consistently peeking to the LEFT */}
+          {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly transitioning to Layer 2 */}
           {thirdCard && (
-            <div
+            <motion.div
               key={`third-${thirdCard.id}`}
               aria-hidden="true"
-              className="absolute inset-0 rounded-[32px] border pointer-events-none opacity-50 overflow-hidden"
+              className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
+                y: thirdY,
+                rotate: thirdRotate,
+                opacity: thirdOpacity,
                 zIndex: 1,
               }}
             />
           )}
 
-          {/* Layer 2: Middle card consistently peeking to the RIGHT */}
+          {/* Layer 2: Middle card consistently peeking to the RIGHT, smoothly straightens to 0deg as top card flies away */}
           {nextCard && (
-            <div
+            <motion.div
               key={`next-${nextCard.id}`}
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
-                transform: `translateY(6px) rotate(${stackRightRotate}deg)`,
-                opacity: 0.9,
+                y: nextY,
+                rotate: nextRotate,
+                opacity: nextOpacity,
                 zIndex: 2,
               }}
               className="absolute inset-0 flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none overflow-hidden"
@@ -530,7 +552,7 @@ export function CardStack({
                   ? nextCard.coverPrompt || "READY TO START? SWIPE RIGHT →"
                   : nextCard.edition || editionText}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Layer 1: Active Top Draggable Card */}
