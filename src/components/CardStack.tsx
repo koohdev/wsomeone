@@ -422,33 +422,29 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
-          {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly springs into position */}
+          {/* Layer 3: Bottom card consistently peeking to the LEFT */}
           {thirdCard && (
-            <motion.div
-              key={`card-${thirdCard.id}`}
-              initial={{ y: 14, rotate: stackLeftRotate, opacity: 0 }}
-              animate={{ y: 10, rotate: stackLeftRotate, opacity: 0.5 }}
-              exit={{ opacity: 0 }}
-              transition={{ type: "spring", damping: 26, stiffness: 240 }}
+            <div
+              key={`third-${thirdCard.id}`}
               aria-hidden="true"
-              className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
+              className="absolute inset-0 rounded-[32px] border pointer-events-none opacity-50 overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
+                transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
                 zIndex: 1,
               }}
             />
           )}
 
-          {/* Layer 2: Middle card consistently peeking to the RIGHT, smoothly springs into position */}
+          {/* Layer 2: Middle card consistently peeking to the RIGHT */}
           {nextCard && (
-            <motion.div
-              key={`card-${nextCard.id}`}
-              initial={{ y: 10, rotate: stackLeftRotate, opacity: 0.5 }}
-              animate={{ y: 6, rotate: stackRightRotate, opacity: 0.9 }}
-              transition={{ type: "spring", damping: 26, stiffness: 240 }}
+            <div
+              key={`next-${nextCard.id}`}
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
+                transform: `translateY(6px) rotate(${stackRightRotate}deg)`,
+                opacity: 0.9,
                 zIndex: 2,
               }}
               className="absolute inset-0 flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none overflow-hidden"
@@ -534,7 +530,7 @@ export function CardStack({
                   ? nextCard.coverPrompt || "READY TO START? SWIPE RIGHT →"
                   : nextCard.edition || editionText}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Layer 1: Active Top Draggable Card */}
