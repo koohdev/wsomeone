@@ -69,7 +69,7 @@ export function CardStack({
   const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
 
   // Dynamic transforms for Layer 2 (middle card) as top card is dragged
-  const nextScale = useTransform(x, [-250, 0, 250], [1, 0.96, 1]);
+  // NO scale transform — all cards are the same fixed size to prevent resize flash
   const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
   const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
   const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
@@ -428,7 +428,7 @@ export function CardStack({
               className="absolute inset-0 aspect-[1.38/1] rounded-[32px] border pointer-events-none opacity-50 overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                transform: `translateY(10px) scale(0.94) rotate(${stackLeftRotate}deg)`,
+                transform: `translateY(10px) rotate(${stackLeftRotate}deg)`,
                 zIndex: 1,
               }}
             />
@@ -441,7 +441,6 @@ export function CardStack({
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
-                scale: nextScale,
                 y: nextY,
                 rotate: nextRotate,
                 opacity: nextOpacity,
