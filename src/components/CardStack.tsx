@@ -68,26 +68,6 @@ export function CardStack({
   const x = useMotionValue(0);
   const rotate = useTransform(x, [-800, 0, 800], [-16, 0, 16]);
 
-  // Dynamic transforms for Layer 2 (middle card) as top card is dragged
-  // Smoothly straightens from 2.8deg -> 0deg and y: 6 -> 0 as top card flies away
-  const nextY = useTransform(x, [-250, 0, 250], [0, 6, 0]);
-  const nextOpacity = useTransform(x, [-250, 0, 250], [1, 0.9, 1]);
-  const nextRotate = useTransform(x, [-250, 0, 250], [0, stackRightRotate, 0]);
-
-  // Dynamic transforms for Layer 3 (bottom card) as top card is dragged
-  const thirdY = useTransform(x, [-250, 0, 250], [6, 10, 6]);
-  const thirdOpacity = useTransform(x, [-250, 0, 250], [0.9, 0.5, 0.9]);
-  const thirdRotate = useTransform(
-    x,
-    [-250, 0, 250],
-    [stackRightRotate, stackLeftRotate, stackRightRotate],
-  );
-
-  // Synchronize motion value reset to post-render commit when currentIndex changes
-  useEffect(() => {
-    x.set(0);
-  }, [currentIndex, x]);
-
   const getExitDistance = () => {
     if (typeof window !== "undefined") {
       return window.innerWidth / 2 + 320;
@@ -122,6 +102,7 @@ export function CardStack({
       });
 
       onNext();
+      x.set(0);
       setIsAnimating(false);
     } else if (info.offset.x < -leftThreshold) {
       // Reverse / Swipe Left -> Return previous card over top without changing currentCard's text!
@@ -441,32 +422,32 @@ export function CardStack({
         </div>
       ) : (
         <div className="relative w-full aspect-[1.38/1]">
-          {/* Layer 3: Bottom card consistently peeking to the LEFT, smoothly transitioning to Layer 2 */}
+          {/* Layer 3: Bottom card peeking left, smoothly emerges from underneath */}
           {thirdCard && (
             <motion.div
               key={`third-${thirdCard.id}`}
+              initial={{ rotate: stackLeftRotate, y: 14, opacity: 0 }}
+              animate={{ rotate: stackLeftRotate, y: 10, opacity: 0.5 }}
+              transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
               aria-hidden="true"
               className="absolute inset-0 rounded-[32px] border pointer-events-none overflow-hidden"
               style={{
                 ...getCardStyle(thirdCard.isCover),
-                y: thirdY,
-                rotate: thirdRotate,
-                opacity: thirdOpacity,
                 zIndex: 1,
               }}
             />
           )}
 
-          {/* Layer 2: Middle card consistently peeking to the RIGHT, smoothly straightens to 0deg as top card flies away */}
+          {/* Layer 2: Middle card peeking right, smoothly transitions from Layer 3 position */}
           {nextCard && (
             <motion.div
               key={`next-${nextCard.id}`}
+              initial={{ rotate: stackLeftRotate, y: 10, opacity: 0.5 }}
+              animate={{ rotate: stackRightRotate, y: 6, opacity: 0.9 }}
+              transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
               aria-hidden="true"
               style={{
                 ...getCardStyle(nextCard.isCover),
-                y: nextY,
-                rotate: nextRotate,
-                opacity: nextOpacity,
                 zIndex: 2,
               }}
               className="absolute inset-0 flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border pointer-events-none overflow-hidden"
@@ -559,6 +540,9 @@ export function CardStack({
           {currentCard && (
             <motion.div
               key={`current-${currentCard.id}`}
+              initial={{ rotate: stackRightRotate, y: 6 }}
+              animate={{ rotate: 0, y: 0 }}
+              transition={{ duration: 0.22, ease: [0.32, 0.72, 0, 1] }}
               drag={isShuffling ? false : "x"}
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.85}
@@ -566,7 +550,6 @@ export function CardStack({
               style={{
                 ...getCardStyle(currentCard.isCover),
                 x,
-                rotate,
                 zIndex: 10,
               }}
               className="relative aspect-[1.38/1] w-full cursor-grab active:cursor-grabbing flex flex-col items-center justify-between rounded-[32px] p-6 sm:p-8 landscape:p-4 landscape:sm:p-5 text-center border overflow-hidden"
